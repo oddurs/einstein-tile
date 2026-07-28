@@ -170,13 +170,20 @@ await page.waitForTimeout(400);
 
 const meterText = () => repeat.locator('[data-meter]').textContent().then((t) => t.trim());
 const promptText = () => repeat.locator('[data-prompt]').textContent().then((t) => t.trim());
-const rbox = await repeat.locator('canvas').boundingBox();
-const rx = rbox.x + rbox.width / 2;
-const ry = rbox.y + rbox.height / 2;
+// Recompute the box every time: the canvas moves when the act changes and when
+// the page reflows, and a stale centre silently drags from the wrong place.
 const drag = async (dx, dy) => {
-  await page.mouse.move(rx, ry);
+  // Bring it on screen first: a canvas scrolled out of the viewport gives
+  // negative coordinates that the mouse simply cannot reach, and the drag
+  // silently does nothing.
+  await repeat.locator('canvas').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(80);
+  const box = await repeat.locator('canvas').boundingBox();
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(x, y);
   await page.mouse.down();
-  await page.mouse.move(rx + dx, ry + dy, { steps: 6 });
+  await page.mouse.move(x + dx, y + dy, { steps: 6 });
   await page.mouse.up();
   await page.waitForTimeout(110);
 };
@@ -200,9 +207,21 @@ else pass('hexagon floor clicks into alignment');
 await repeat.locator('[data-next]').click();
 await page.waitForTimeout(500);
 
+// Prove dragging moves the copy at all...
+const beforeDrag = await meterText();
+await drag(60, 25);
+if ((await meterText()) === beforeDrag) fail('dragging did not change the slide');
+else pass('dragging slides the copy');
+
+// ...then step the candidate slides deterministically. Driving this by drag
+// geometry made the check fragile — the number of *distinct* slides a fixed
+// pixel path visits shifts whenever page height changes, so an unrelated CSS
+// fix could turn it red. The nudge button steps one candidate at a time by
+// construction, and exercises the keyboard route while it is at it.
 let everPerfect = false;
-for (let i = 0; i < 8; i++) {
-  await drag(((i * 47) % 140) - 70, ((i * 61) % 140) - 70);
+for (let i = 0; i < 10; i++) {
+  await repeat.locator('[data-nudge]').click();
+  await page.waitForTimeout(70);
   if ((await meterText()).includes('every tile')) everPerfect = true;
 }
 if (everPerfect) fail('the hat tiling reported a perfect slide — that would be false');

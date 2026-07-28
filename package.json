@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "smoke": "astro build && node scripts/smoke.mjs",
-    "og": "vite-node scripts/og.mjs"
+    "og": "vite-node scripts/og.mjs",
+    "verify": "npm run typecheck && npm test && npm run smoke"
   },
   "dependencies": {
     "astro": "^7.1.4"

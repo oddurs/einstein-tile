@@ -268,7 +268,20 @@ export function mountRepeatScene(root: HTMLElement): () => void {
     draw();
   };
 
-  const onNext = () => loadAct('hats');
+  const onNext = () => {
+    loadAct('hats');
+    // The button that got us here lives below the canvas, so clicking it
+    // scrolls itself into view and pushes the tiling off the top of the screen
+    // — the reader advances to act two and is looking at an empty panel. Bring
+    // the stage back.
+    const stage = canvas.closest('figure') ?? canvas;
+    stage.scrollIntoView({
+      block: 'center',
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth',
+    });
+  };
   const onReset = () => {
     if (act === 'hats') {
       // Show the reader the best slide that exists, so "never" is a measured
