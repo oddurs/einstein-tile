@@ -217,58 +217,64 @@ const zoomedTo = (await caption.textContent())?.trim();
 if (zoomedTo === zoomedFrom) fail('zooming out did not coarsen the grouping');
 else pass('zooming out coarsens the grouping');
 
-// ── scene 3 — try to break it ──────────────────────────────────────────────
+// ── scene 3 — slide it over itself ────────────────────────────────────────
 console.log('\nscene 3:');
-const place = await context.newPage();
-const placeProblems = [];
-place.on('console', (m) => m.type() === 'error' && placeProblems.push(`console: ${m.text()}`));
-place.on('pageerror', (e) => placeProblems.push(`uncaught: ${e.message}`));
-await place.goto(`http://localhost:${PORT}${BASE}/scene-3/`, { waitUntil: 'networkidle' });
-await place.waitForTimeout(500);
+const slide = await context.newPage();
+const slideProblems = [];
+slide.on('console', (m) => m.type() === 'error' && slideProblems.push(`console: ${m.text()}`));
+slide.on('pageerror', (e) => slideProblems.push(`uncaught: ${e.message}`));
+await slide.goto(`http://localhost:${PORT}${BASE}/scene-3/`, { waitUntil: 'networkidle' });
+await slide.waitForTimeout(600);
 
-if (placeProblems.length) placeProblems.forEach(fail);
+if (slideProblems.length) slideProblems.forEach(fail);
 else pass('no console errors or uncaught exceptions');
 
-const countText = () => place.locator('[data-count]').textContent().then((t) => t.trim());
-const promptText = () => place.locator('[data-prompt]').textContent().then((t) => t.trim());
+const meter = () => slide.locator('[data-meter]').textContent().then((t) => t.trim());
+const said = () => slide.locator('[data-prompt]').textContent().then((t) => t.trim());
+const sbox = await slide.locator('canvas').boundingBox();
+const sx = sbox.x + sbox.width / 2;
+const sy = sbox.y + sbox.height / 2;
+const drag = async (dx, dy) => {
+  await slide.mouse.move(sx, sy);
+  await slide.mouse.down();
+  await slide.mouse.move(sx + dx, sy + dy, { steps: 6 });
+  await slide.mouse.up();
+  await slide.waitForTimeout(110);
+};
 
-if ((await countText()) !== '1 tile') fail(`expected to start with 1 tile, got ${await countText()}`);
-else pass('starts from a single hat');
+// The scene must NOT open on the identity slide, which matches trivially and
+// would assert the opposite of the lesson.
+if ((await meter()).includes('every tile')) fail('opens already aligned — the identity slide is not a slide');
+else pass(`opens unaligned (${await meter()})`);
 
-// tapping must place a tile on the very first try — an earlier build required a
-// second tap on a ghost, so taps could do nothing at all
-const pbox = await place.locator('canvas').boundingBox();
-const px = pbox.x + pbox.width / 2;
-const py = pbox.y + pbox.height / 2 - 80;
-await place.mouse.click(px + 55, py);
-await place.waitForTimeout(150);
-if ((await countText()) === '1 tile') fail('a tap next to the tile placed nothing');
-else pass(`one tap places a tile (${await countText()})`);
-
-// The reader must be able to build a real patch, not stall after a few tiles.
-// (That unfillable pockets are *reachable* is proved in test/moves.test.ts —
-// asserting it from random clicking here would be flaky, since the auto-pick
-// deliberately prefers placements that don't wall one off.)
-for (let i = 0; i < 40; i++) {
-  const ang = i * 2.399;
-  const r = 45 + (i % 9) * 12;
-  await place.mouse.click(px + Math.cos(ang) * r, py + Math.sin(ang) * r);
-  await place.waitForTimeout(40);
+// Act 1: a hexagon floor must click, or "it never clicks" has no meaning.
+let clicked = false;
+for (const [dx, dy] of [[25, 10], [35, -18], [-22, 28], [45, 15], [12, 40]]) {
+  await drag(dx, dy);
+  if ((await meter()).includes('every tile')) { clicked = true; break; }
 }
-const built = Number.parseInt(await countText(), 10);
-if (!Number.isFinite(built) || built < 10) fail(`only reached ${await countText()} after 40 taps`);
-else pass(`play builds a real patch (${await countText()} after 40 taps)`);
+if (!clicked) fail('the hexagon floor never clicked — the control condition is broken');
+else pass('hexagon floor clicks into alignment');
 
-const beforeUndo = await countText();
-await place.locator('[data-undo]').click();
-await place.waitForTimeout(120);
-if ((await countText()) === beforeUndo) fail('undo did not remove a tile');
-else pass('undo removes the last tile');
+await slide.locator('[data-next]').click();
+await slide.waitForTimeout(500);
 
-await place.locator('[data-reset]').click();
-await place.waitForTimeout(150);
-if ((await countText()) !== '1 tile') fail('start over did not reset the board');
-else pass('start over resets to a single hat');
+// Act 2: the hat tiling must never click, however much you slide it.
+let everPerfect = false;
+for (let i = 0; i < 8; i++) {
+  await drag(((i * 47) % 140) - 70, ((i * 61) % 140) - 70);
+  if ((await meter()).includes('every tile')) everPerfect = true;
+}
+if (everPerfect) fail('the hat tiling reported a perfect slide — that would be a false claim');
+else pass(`hat tiling never aligns (${await meter()})`);
+
+if (!(await said()).startsWith('None of them work')) fail('the conclusion never appeared after hunting');
+else pass('states the conclusion once the reader has hunted');
+
+await slide.locator('[data-reset]').click();
+await slide.waitForTimeout(400);
+if (!/\d+% land/.test(await meter())) fail('best-possible slide did not report a score');
+else pass(`shows the best slide that exists (${await meter()})`);
 
 await browser.close();
 server.close();

@@ -252,49 +252,55 @@ success test.
 
 ---
 
-### S2. Scene 3 — try to break it — **L** — ✅ done
+### S2. Scene 3 — try to make it repeat — **L** — ✅ done (redesigned)
 
-`src/scenes/placement.ts` + `/scene-3/`. Tap open space, the best-fitting legal
-hat drops in, and the other hats that would fit there stay on screen as ghosts
-you can tap to swap to. Undo, start over, live tile count. Colouring uses the
-reflection scheme so the mirrored hats are visible as you build.
+**The first build failed a playtest and was replaced.** It let a reader place
+hats by hand and hoped the point would emerge. It didn't: nothing in it ever
+asked you to make the pattern *repeat*, so there was no goal, no test, and no
+moment of failure — a sandbox with a lesson's title on it. The reader's verdict
+was "I didn't really get it", which was correct.
 
-Three corrections came out of driving it in a real browser:
+**The redesign: let the mechanic be the definition.** A pattern repeats exactly
+when you can slide a copy of it onto itself and have everything land. That is
+the textbook definition of periodic, and it is also something a thumb can do.
+Two acts:
 
-- **Ghost-first didn't work.** The original design showed ghosts and required a
-  second tap to commit. Any tap that missed a ghost merely re-queried, so a
-  reader could tap 40 times and place two tiles. A tap now *acts*, and the
-  alternatives are offered afterwards.
-- **Taps must be forgiving.** Requiring the tap to land inside a candidate hat
-  meant most taps reported "nothing fits". A tap now falls back to the nearest
-  legal placements within a radius, and the frontier is drawn faintly so there
-  is something to aim at.
-- **Pocket avoidance is a tiebreak, not a filter.** Measured: pure random play
-  walls itself into an unfillable pocket after a median of **6 tiles**, which
-  reads as "hats are fiddly" rather than as anything lawful. Always avoiding
-  pockets never traps at all in 80 moves, which deletes the phenomenon. So the
-  auto-pick prefers safe placements — 24 tiles from 40 taps — while
-  pocket-forming ones stay available as ghosts.
+1. **A hexagon floor.** Drag the copy — it clicks, the whole overlap lights up.
+   *That* is what repeating looks like. Without this act, "it never clicks" has
+   no reference point and reads as a broken toy.
+2. **The hat tiling.** Drag anywhere. A few tiles land by coincidence; it never
+   clicks. The best slide that exists reaches 46%.
 
-⚠️ **The headline lesson is not fully delivered.** [07](07-scope.md) asks this
-scene for *"you try to make it repeat, you can't"*. What it currently delivers
-is the related but distinct *"fitting locally never promises you can carry
-on"*, shown by the unfillable pocket. Nothing yet lets a reader **check**
-whether their patch repeats, so the stated lesson rides on the prompt text
-rather than on the mechanic. That is the top follow-up, and it wants playtesting
-(X2) before it is built — the right mechanic depends on what readers actually
-try to do.
+No paragraph does the teaching. The reader's hand does.
 
-*Original ticket text:*
+**The idea that makes it rigorous rather than suggestive:** dragging snaps to
+the *complete set of candidate periods*. A period must map any given tile onto a
+tile of the same form, so the only possible slides are `anchor_j − anchor_0` over
+pieces sharing piece 0's form. There are 31 of them for this patch. So the reader
+is not sampling slides and finding none — they are walking the entire set of
+slides that could conceivably work and watching each one fail, with a
+`4/31 slides tried` counter making the exhaustion visible.
 
-Tap an exposed edge → ghost tiles appear in every legal orientation → tap to
-commit. No free drag ([06 §4](06-webapp-design.md)). Includes the scroll gate:
-the reader cannot continue until they've attempted a repeat.
+Four bugs found by driving it, each worth remembering:
 
-**Done when:** placement is comfortable one-thumbed on a phone, and reaching a
-dead end feels like the tiling's fault rather than the interface's.
+- **The identity slide matches everything**, so opening at zero announced "every
+  tile landed" before the reader moved anything — asserting the opposite of the
+  lesson. Opens at (3,1) now, which is outside the hexagon sublattice so both
+  acts start genuinely unaligned.
+- **Snapping on every pointer-move traps the copy.** Measuring the next delta
+  from the snapped point means small moves never escape the current candidate's
+  basin; the copy simply would not move. A free drag position now accumulates,
+  and snapping only decides what is scored.
+- **Snapping to the raw lattice made the hexagon act fail** — only 1 point in 12
+  is a hex vector, so the floor almost never clicked. Snapping to candidate
+  periods fixed it and is more correct.
+- **The conclusion was gated on a partial match**, but most hat slides land
+  *nothing*, so it never appeared.
 
----
+`test/alignment.test.ts` proves the claim rather than trusting the UI: no slide
+in a radius-12 sweep aligns the hat tiling, and no member of the complete
+candidate set does either — which rules out every translation in the plane, not
+just nearby ones.
 
 ### X1. Mobile + perf harness — **M** — ◐ measured, one known limit
 

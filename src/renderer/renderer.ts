@@ -81,6 +81,12 @@ export class TileRenderer {
 
   /** Called after any pan or zoom, so scenes can react to the view. */
   onViewChange: ((view: Readonly<View>) => void) | null = null;
+  /**
+   * Set to take over dragging: receives the drag in **world** units and the view
+   * does not pan. For scenes where the drag moves an object rather than the
+   * camera. Pinch-zoom is unaffected.
+   */
+  onDragWorld: ((dx: number, dy: number) => void) | null = null;
 
   private colourOverride: ((tile: Tile) => string) | null = null;
   /**
@@ -129,6 +135,11 @@ export class TileRenderer {
 
     this.detachGestures = attachGestures(canvas, {
       onPan: (dx, dy) => {
+        if (this.onDragWorld) {
+          // y is flipped between screen and world.
+          this.onDragWorld(dx / this.view.scale, -dy / this.view.scale);
+          return;
+        }
         this.view = pan(this.view, dx, dy);
         this.viewChanged();
       },
@@ -158,6 +169,55 @@ export class TileRenderer {
   /** Render a bare tile list — for boards that are built up rather than derived. */
   setTiles(tiles: readonly Tile[], refit = false): void {
     this.setPatch({ level: 0, root: 'H', tiles, metatiles: [] }, refit);
+  }
+
+  /**
+   * Render arbitrary polygons rather than hats.
+   *
+   * Lets a scene show a comparison tiling — a hexagon floor, say — through the
+   * same pan, zoom and dpr machinery, without pretending it is made of hats.
+   * Merged into one path per fill, as tiles are.
+   */
+  setFigures(
+    figures: readonly { points: readonly Point[]; fill: string }[],
+    refit = true,
+  ): void {
+    this.patch = null;
+    this.geometry = [];
+    this.bucketCache.clear();
+
+    const byFill = new Map<string, Path2D>();
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const figure of figures) {
+      let path = byFill.get(figure.fill);
+      if (!path) {
+        path = new Path2D();
+        byFill.set(figure.fill, path);
+      }
+      const pts = figure.points;
+      if (!pts.length) continue;
+      path.moveTo(pts[0]!.x, pts[0]!.y);
+      for (let i = 1; i < pts.length; i++) path.lineTo(pts[i]!.x, pts[i]!.y);
+      path.closePath();
+      for (const p of pts) {
+        if (p.x < minX) minX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y > maxY) maxY = p.y;
+      }
+    }
+
+    this.buckets = [...byFill.entries()].map(([fill, path]) => ({ path, fill }));
+    this.worldBounds = { minX, minY, maxX, maxY };
+    this.tileWorldSize = Math.sqrt(
+      Math.max((maxX - minX) * (maxY - minY), 1e-9) / Math.max(figures.length, 1),
+    );
+    if (refit) this.fit();
+    else this.requestDraw();
   }
 
   setScheme(scheme: ColourScheme): void {

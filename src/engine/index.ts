@@ -47,6 +47,16 @@ export {
 export { boundaryLoops, groupByAncestor, signedArea2 } from './hull.js';
 
 export {
+  type Alignment,
+  type Piece,
+  alignment,
+  bestAlignment,
+  candidateShifts,
+} from './alignment.js';
+
+export { hexOutline, hexPatch } from './hexgrid.js';
+
+export {
   type Board,
   deadHoles,
   frontier,
