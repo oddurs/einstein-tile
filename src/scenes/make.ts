@@ -34,6 +34,7 @@ import {
 } from '../engine/index.js';
 import { makePalette, SURFACE } from '../renderer/palette.js';
 import { TileRenderer } from '../renderer/renderer.js';
+import { bind } from './scene.js';
 
 export interface Design {
   /** Substitution depth, 2–5. */
@@ -191,21 +192,27 @@ function download(name: string, blob: Blob): void {
 }
 
 export function mountMake(root: HTMLElement): () => void {
-  const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');
-  const levelInput = root.querySelector<HTMLInputElement>('[data-level]');
-  const shapeInput = root.querySelector<HTMLInputElement>('[data-shape]');
-  const schemeBox = root.querySelector<HTMLElement>('[data-schemes]');
-  const darkToggle = root.querySelector<HTMLInputElement>('[data-dark]');
-  const readout = root.querySelector<HTMLElement>('[data-readout]');
-  const svgButton = root.querySelector<HTMLButtonElement>('[data-svg]');
-  const pngButton = root.querySelector<HTMLButtonElement>('[data-png]');
-  const shareButton = root.querySelector<HTMLButtonElement>('[data-share]');
-  if (
-    !canvas || !levelInput || !shapeInput || !schemeBox ||
-    !darkToggle || !readout || !svgButton || !pngButton || !shareButton
-  ) {
-    throw new Error('make: missing required elements');
-  }
+  const el = bind(root, {
+    canvas: '[data-canvas]',
+    levelInput: '[data-level]',
+    shapeInput: '[data-shape]',
+    schemeBox: '[data-schemes]',
+    darkToggle: '[data-dark]',
+    readout: '[data-readout]',
+    svgButton: '[data-svg]',
+    pngButton: '[data-png]',
+    shareButton: '[data-share]',
+  }, 'make');
+  const canvas = el.canvas as HTMLCanvasElement;
+  const levelInput = el.levelInput as HTMLInputElement;
+  const shapeInput = el.shapeInput as HTMLInputElement;
+  const schemeBox = el.schemeBox;
+  const darkToggle = el.darkToggle as HTMLInputElement;
+  const readout = el.readout;
+  const svgButton = el.svgButton as HTMLButtonElement;
+  const pngButton = el.pngButton as HTMLButtonElement;
+  const shareButton = el.shareButton as HTMLButtonElement;
+
 
   let design = decode(new URLSearchParams(location.search).get('d'));
   // Tighter than the default 6%: this is a picture someone may post or print,
@@ -242,7 +249,7 @@ export function mountMake(root: HTMLElement): () => void {
 
   const draw = () => {
     const { figures, tiles } = build(design);
-    renderer.setDark(design.dark);
+    renderer.setAppearance({ dark: design.dark });
     renderer.setFigures(figures, true);
     const shape =
       design.shape <= 0.01 ? 'the hat' : design.shape >= 0.99 ? 'the turtle' : 'no name';

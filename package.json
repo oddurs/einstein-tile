@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "smoke": "astro build && node scripts/smoke.mjs",
     "og": "vite-node scripts/og.mjs",
-    "verify": "npm run typecheck && npm test && npm run smoke",
+    "verify": "bash scripts/verify.sh",
     "smoke:webkit": "astro build && node scripts/smoke.mjs --engine=webkit",
     "shots": "astro build && vite-node scripts/shots.mjs"
   },
@@ -21,6 +21,7 @@
     "astro": "^7.1.4"
   },
   "devDependencies": {
+    "@types/node": "^26.1.2",
     "playwright": "^1.62.0",
     "typescript": "^5.7.2",
     "vitest": "^3.0.5"

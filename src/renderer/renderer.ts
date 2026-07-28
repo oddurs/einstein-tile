@@ -172,11 +172,6 @@ export class TileRenderer {
     else this.requestDraw();
   }
 
-  /** Render a bare tile list — for boards that are built up rather than derived. */
-  setTiles(tiles: readonly Tile[], refit = false): void {
-    this.setPatch({ level: 0, root: 'H', tiles, metatiles: [] }, refit);
-  }
-
   /**
    * Render arbitrary polygons rather than hats.
    *
@@ -226,21 +221,27 @@ export class TileRenderer {
     else this.requestDraw();
   }
 
-  setScheme(scheme: ColourScheme): void {
-    if (scheme === this.scheme) return;
-    this.scheme = scheme;
-    this.recolour();
-  }
-
-  setDark(dark: boolean): void {
-    if (dark === this.dark) return;
-    this.dark = dark;
-    this.recolour();
-  }
-
-  setMode(mode: ColourMode): void {
-    if (mode === this.mode) return;
-    this.mode = mode;
+  /**
+   * Change how tiles are coloured.
+   *
+   * Was three methods — `setScheme`, `setDark`, `setMode` — which were three
+   * doors onto one idea: recolour, keeping the geometry. Callers that only
+   * flip the theme still write `setAppearance({ dark })`, and the rest is no
+   * longer three near-identical guard-and-recolour bodies.
+   */
+  setAppearance(next: {
+    scheme?: ColourScheme;
+    dark?: boolean;
+    mode?: ColourMode;
+  }): void {
+    const changed =
+      (next.scheme !== undefined && next.scheme !== this.scheme) ||
+      (next.dark !== undefined && next.dark !== this.dark) ||
+      (next.mode !== undefined && next.mode !== this.mode);
+    if (!changed) return;
+    if (next.scheme !== undefined) this.scheme = next.scheme;
+    if (next.dark !== undefined) this.dark = next.dark;
+    if (next.mode !== undefined) this.mode = next.mode;
     this.recolour();
   }
 

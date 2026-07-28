@@ -35,6 +35,7 @@ import {
 } from '../engine/index.js';
 import { METATILE } from '../renderer/palette.js';
 import { TileRenderer, type Overlay } from '../renderer/renderer.js';
+import { bind } from './scene.js';
 
 /** Patch depth. 4 gives 7,921 tiles — enough hierarchy to be convincing. */
 const LEVEL = 4;
@@ -66,13 +67,17 @@ export function mountHierarchyScene(
 ): () => void {
   const level = options.level ?? LEVEL;
 
-  const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');
-  const slider = root.querySelector<HTMLInputElement>('[data-stage]');
-  const caption = root.querySelector<HTMLElement>('[data-caption]');
-  const readout = root.querySelector<HTMLElement>('[data-readout]');
-  if (!canvas || !slider || !caption || !readout) {
-    throw new Error('hierarchy scene: missing required elements');
-  }
+  const el = bind(root, {
+    canvas: '[data-canvas]',
+    slider: '[data-stage]',
+    caption: '[data-caption]',
+    readout: '[data-readout]',
+  }, 'hierarchy scene');
+  const canvas = el.canvas as HTMLCanvasElement;
+  const slider = el.slider as HTMLInputElement;
+  const caption = el.caption;
+  const readout = el.readout;
+
 
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const theme = () => (media.matches ? 'dark' : 'light');
@@ -143,7 +148,7 @@ export function mountHierarchyScene(
     suppressViewChange = false;
   };
   const onTheme = () => {
-    renderer.setDark(media.matches);
+    renderer.setAppearance({ dark: media.matches });
     stages = buildStages(patch, level, theme());
     const at = current;
     current = -1;

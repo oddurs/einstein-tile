@@ -17,13 +17,14 @@
 import { buildPatch, polygon, type Point } from '../engine/index.js';
 import { ORIENTATION_ACCESSIBLE, SURFACE } from '../renderer/palette.js';
 import { TileRenderer } from '../renderer/renderer.js';
+import { bind } from './scene.js';
 
 const LEVEL = 4;
 const DURATION = 2600;
 
 export function mountHookScene(root: HTMLElement): () => void {
-  const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');
-  if (!canvas) throw new Error('hook scene: missing canvas');
+  const canvas = bind(root, { canvas: '[data-canvas]' }, 'hook scene')
+    .canvas as HTMLCanvasElement;
 
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const still = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -94,7 +95,7 @@ export function mountHookScene(root: HTMLElement): () => void {
   };
 
   const onTheme = () => {
-    renderer.setDark(media.matches);
+    renderer.setAppearance({ dark: media.matches });
     paint(order.length);
   };
   media.addEventListener('change', onTheme);

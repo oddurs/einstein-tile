@@ -34,6 +34,7 @@ import {
 } from '../engine/index.js';
 import { METATILE } from '../renderer/palette.js';
 import { TileRenderer, type Overlay } from '../renderer/renderer.js';
+import { bind } from './scene.js';
 
 /**
  * Deliberately not the biggest patch available.
@@ -59,13 +60,17 @@ const MAX_MARKS = 120;
 const IDLE = 'Tap anywhere — the same patch will be somewhere else too.';
 
 export function mountRecurrenceScene(root: HTMLElement): () => void {
-  const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');
-  const prompt = root.querySelector<HTMLElement>('[data-prompt]');
-  const readout = root.querySelector<HTMLElement>('[data-readout]');
-  const pick = root.querySelector<HTMLButtonElement>('[data-pick]');
-  if (!canvas || !prompt || !readout || !pick) {
-    throw new Error('recurrence scene: missing required elements');
-  }
+  const el = bind(root, {
+    canvas: '[data-canvas]',
+    prompt: '[data-prompt]',
+    readout: '[data-readout]',
+    pick: '[data-pick]',
+  }, 'recurrence scene');
+  const canvas = el.canvas as HTMLCanvasElement;
+  const prompt = el.prompt;
+  const readout = el.readout;
+  const pick = el.pick as HTMLButtonElement;
+
 
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const theme = () => (media.matches ? 'dark' : 'light');
@@ -184,7 +189,7 @@ export function mountRecurrenceScene(root: HTMLElement): () => void {
   };
 
   const onTheme = () => {
-    renderer.setDark(media.matches);
+    renderer.setAppearance({ dark: media.matches });
     const c = colours();
     renderer.setFigures(
       pieces.map((p) => ({ points: p.points, fill: c.base })),

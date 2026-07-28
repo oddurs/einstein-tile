@@ -50,10 +50,10 @@ export function mountPreview(root: HTMLElement): () => void {
   };
 
   const onLevel = () => load(Number(levelInput.value));
-  const onScheme = () => renderer.setScheme(schemeSelect.value as ColourScheme);
+  const onScheme = () => renderer.setAppearance({ scheme: schemeSelect.value as ColourScheme });
   const onFit = () => renderer.fit();
-  const onTheme = (e: MediaQueryListEvent) => renderer.setDark(e.matches);
-  const onMode = () => renderer.setMode(mode());
+  const onTheme = (e: MediaQueryListEvent) => renderer.setAppearance({ dark: e.matches });
+  const onMode = () => renderer.setAppearance({ mode: mode() });
 
   levelInput.addEventListener('input', onLevel);
   schemeSelect.addEventListener('change', onScheme);

@@ -50,7 +50,7 @@ describe('no page hard-codes a surface', () => {
   it('leaves the surfaces to rootCSS() alone', async () => {
     // The regression guard. If someone pastes `--bg: #fcfcfb` back into a page,
     // this fails — and the reason it matters is in the module comment above.
-    const files = (await readdir(PAGES)).filter((f) => f.endsWith('.astro'));
+    const files = (await readdir(PAGES)).filter((f: string) => f.endsWith('.astro'));
     expect(files.length).toBeGreaterThan(0);
 
     for (const file of files) {
@@ -67,7 +67,7 @@ describe('no page hard-codes a surface', () => {
   });
 
   it('every page pulls in the generated block', async () => {
-    const files = (await readdir(PAGES)).filter((f) => f.endsWith('.astro'));
+    const files = (await readdir(PAGES)).filter((f: string) => f.endsWith('.astro'));
     for (const file of files) {
       const source = await readFile(join(PAGES, file), 'utf8');
       expect(source, `${file} should use rootCSS()`).toContain('rootCSS()');

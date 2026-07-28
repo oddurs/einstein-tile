@@ -25,6 +25,7 @@ import {
 } from '../engine/index.js';
 import { METATILE } from '../renderer/palette.js';
 import { TileRenderer, type Overlay } from '../renderer/renderer.js';
+import { bind } from './scene.js';
 
 /** The three hexagons the hat's kites are cut from. */
 const HEXES = [...new Map(HAT_KITES.map((k) => [`${k.centre.a},${k.centre.b}`, k.centre])).values()];
@@ -40,13 +41,17 @@ const CLOSING =
   'It is called the hat. Shapes like this had been listed in catalogues before and walked straight past — because nobody had tried to tile with one.';
 
 export function mountHatScene(root: HTMLElement): () => void {
-  const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');
-  const caption = root.querySelector<HTMLElement>('[data-caption]');
-  const slider = root.querySelector<HTMLInputElement>('[data-step]');
-  const readout = root.querySelector<HTMLElement>('[data-readout]');
-  if (!canvas || !caption || !slider || !readout) {
-    throw new Error('hat scene: missing required elements');
-  }
+  const el = bind(root, {
+    canvas: '[data-canvas]',
+    caption: '[data-caption]',
+    slider: '[data-step]',
+    readout: '[data-readout]',
+  }, 'hat scene');
+  const canvas = el.canvas as HTMLCanvasElement;
+  const caption = el.caption;
+  const slider = el.slider as HTMLInputElement;
+  const readout = el.readout;
+
 
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const theme = () => (media.matches ? 'dark' : 'light');
@@ -126,7 +131,7 @@ export function mountHatScene(root: HTMLElement): () => void {
 
   const onSlider = () => show(slider.valueAsNumber);
   const onTheme = () => {
-    renderer.setDark(media.matches);
+    renderer.setAppearance({ dark: media.matches });
     draw();
   };
   // Tapping anywhere advances — the same "tap to go on" the rest of the piece

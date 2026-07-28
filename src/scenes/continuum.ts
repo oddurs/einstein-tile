@@ -33,6 +33,7 @@ import {
 } from '../engine/index.js';
 import { ORIENTATION_ACCESSIBLE } from '../renderer/palette.js';
 import { TileRenderer } from '../renderer/renderer.js';
+import { bind } from './scene.js';
 
 /** Small enough that a whole deformation fits in one frame while dragging. */
 const LEVEL = 2;
@@ -58,13 +59,17 @@ const CAPTIONS = [
 ] as const;
 
 export function mountContinuumScene(root: HTMLElement): () => void {
-  const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');
-  const slider = root.querySelector<HTMLInputElement>('[data-morph]');
-  const caption = root.querySelector<HTMLElement>('[data-caption]');
-  const readout = root.querySelector<HTMLElement>('[data-readout]');
-  if (!canvas || !slider || !caption || !readout) {
-    throw new Error('continuum scene: missing required elements');
-  }
+  const el = bind(root, {
+    canvas: '[data-canvas]',
+    slider: '[data-morph]',
+    caption: '[data-caption]',
+    readout: '[data-readout]',
+  }, 'continuum scene');
+  const canvas = el.canvas as HTMLCanvasElement;
+  const slider = el.slider as HTMLInputElement;
+  const caption = el.caption;
+  const readout = el.readout;
+
 
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const theme = () => (media.matches ? 'dark' : 'light');
@@ -108,7 +113,7 @@ export function mountContinuumScene(root: HTMLElement): () => void {
 
   const onInput = () => show(slider.valueAsNumber / 1000);
   const onTheme = () => {
-    renderer.setDark(media.matches);
+    renderer.setAppearance({ dark: media.matches });
     const ramp = ORIENTATION_ACCESSIBLE[theme()];
     tiles.forEach((tile, i) => {
       fills[i] = ramp[orientation(tile.iso) % 12]!;

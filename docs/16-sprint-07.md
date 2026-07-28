@@ -55,14 +55,35 @@ the licence for this sprint.
 
 ## Tickets
 
-### W1. Delete the dead pages — **S**
+### W1. Delete the dead pages — **S** — ✅ done
+
+`/scene-3/` and `/scene-5/` removed — 334 lines of markup and CSS that nothing
+linked to and every push deployed.
+
+**And a third orphan the ticket didn't know about.** `src/scenes/placement.ts`,
+299 lines, was the *original* scene 3 — the hand-placement version a reader
+tried and did not understand in sprint 5. The redesign replaced it with
+`repeat.ts` and left it in the tree, imported by nothing. Found only because W4's
+survey of renderer call sites showed a `setTiles` caller that should not have
+existed.
+
+*Original ticket text:*
 
 Remove `/scene-3/` and `/scene-5/`. Confirm nothing links them, including the
 README and the docs, then delete rather than deprecate.
 
 ---
 
-### W2. One source of truth for the surfaces — **M**
+### W2. One source of truth for the surfaces — **M** — ✅ done
+
+`src/renderer/tokens.ts` derives the custom properties from `SURFACE` and emits
+them as a generated stylesheet; the pages no longer state a colour.
+
+**The guard was verified by breaking it.** Injecting `--bg: #fcfcfb` into a page
+turns the suite red with `make.astro should not declare --bg itself`; removing
+it turns it green. A guard that has never failed is decoration, not a guarantee.
+
+*Original ticket text:*
 
 The validated colours live in `palette.ts`. The pages should not restate them.
 
@@ -73,7 +94,21 @@ ticket; deduplication is the side effect.
 
 ---
 
-### W3. Extract the scene boilerplate — **M**
+### W3. Extract the scene boilerplate — **M** — ✅ done
+
+`src/scenes/scene.ts` — `bind()`, `watchTheme()`, `teardown()`.
+
+**Honest accounting: this did not save lines.** Scenes went 1,878 → 2,004 with a
+90-line helper, so roughly break-even. The win is structural, and worth stating
+plainly rather than dressed up as a reduction:
+
+- the old guards threw *"missing required elements"* without saying which, so a
+  typo in a `data-` attribute meant reading the markup to find out; `bind()`
+  names them;
+- cleanup no longer restates setup as a second list that has to agree with the
+  first.
+
+*Original ticket text:*
 
 A small helper for the two things every scene does: bind required elements or
 fail loudly, and track the colour scheme. Nothing clever — the scenes should
@@ -81,7 +116,19 @@ still read as themselves, only shorter.
 
 ---
 
-### W4. Narrow the renderer — **S**
+### W4. Narrow the renderer — **S** — ✅ done
+
+**18 public methods → 11.** A usage survey drove it rather than taste:
+`setScheme` and `setMode` had zero callers among the scenes, `setTiles` had one,
+and `setDark` had eight — three doors onto one idea. They are now
+`setAppearance({ scheme?, dark?, mode? })`, and `setTiles` was inlined at its
+single call site.
+
+The ticket said to skip anything that does not make the class easier to hold in
+your head, and that ruled out more: `fit` and `getView` look redundant next to
+`zoomTo` but each answers a genuinely different question.
+
+*Original ticket text:*
 
 Look honestly at the 18 methods. `setTiles` is a thin wrapper over `setPatch`;
 `setScheme`/`setMode`/`setDark` are three doors to one recolour. Merge what is
@@ -92,7 +139,18 @@ skip it.
 
 ---
 
-### W5. Prove nothing changed — **S**
+### W5. Prove nothing changed — **S** — ✅ done
+
+`npm run shots -- --out before` then `--out after --diff before`. **All seven
+surfaces pixel-identical**, against a baseline captured from the stashed
+pre-sprint tree.
+
+The harness caught itself first: it disagreed with its own output on the lede,
+because the hook animates over ~2.6s and the shot depended on when it was taken.
+Capturing under reduced motion made it reproducible — and exercises that path
+into the bargain.
+
+*Original ticket text:*
 
 A refactor's whole claim is that behaviour is identical, so the sprint should
 end by demonstrating it rather than asserting it: screenshots of every scene

@@ -46,6 +46,7 @@ import {
 } from '../engine/index.js';
 import { METATILE, REFLECTION } from '../renderer/palette.js';
 import { TileRenderer, type Overlay } from '../renderer/renderer.js';
+import { bind } from './scene.js';
 
 type Act = 'hexagons' | 'hats';
 
@@ -68,17 +69,25 @@ const CLOSING =
   'None of them work. Not one — and not on a bigger floor either, however far you go. That is what “never repeats” means.';
 
 export function mountRepeatScene(root: HTMLElement): () => void {
-  const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');
-  const title = root.querySelector<HTMLElement>('[data-title]');
-  const prompt = root.querySelector<HTMLElement>('[data-prompt]');
-  const meter = root.querySelector<HTMLElement>('[data-meter]');
-  const bar = root.querySelector<HTMLElement>('[data-bar]');
-  const next = root.querySelector<HTMLButtonElement>('[data-next]');
-  const reset = root.querySelector<HTMLButtonElement>('[data-reset]');
-  const nudge = root.querySelector<HTMLButtonElement>('[data-nudge]');
-  if (!canvas || !title || !prompt || !meter || !bar || !next || !reset || !nudge) {
-    throw new Error('repeat scene: missing required elements');
-  }
+  const el = bind(root, {
+    canvas: '[data-canvas]',
+    title: '[data-title]',
+    prompt: '[data-prompt]',
+    meter: '[data-meter]',
+    bar: '[data-bar]',
+    next: '[data-next]',
+    reset: '[data-reset]',
+    nudge: '[data-nudge]',
+  }, 'repeat scene');
+  const canvas = el.canvas as HTMLCanvasElement;
+  const title = el.title;
+  const prompt = el.prompt;
+  const meter = el.meter;
+  const bar = el.bar;
+  const next = el.next as HTMLButtonElement;
+  const reset = el.reset as HTMLButtonElement;
+  const nudge = el.nudge as HTMLButtonElement;
+
 
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const theme = () => (media.matches ? 'dark' : 'light');
@@ -299,7 +308,7 @@ export function mountRepeatScene(root: HTMLElement): () => void {
     }
   };
   const onTheme = () => {
-    renderer.setDark(media.matches);
+    renderer.setAppearance({ dark: media.matches });
     loadAct(act);
   };
 
