@@ -44,9 +44,16 @@ the lattice with an *asserted* 1e-6 tolerance — against an observed residual o
 
 ```
 npm install
-npm test          # 23 tests
+npm run dev        # Astro dev server
+npm test           # unit tests (engine + view transform)
 npm run typecheck
+npm run smoke      # build, then verify in headless Chromium at a phone viewport
 ```
+
+`npm run smoke` needs browsers once: `npx playwright install chromium`. It
+asserts from real pixels and real events — the canvas is backed at
+devicePixelRatio, it isn't blank, dragging pans it, and the page never scrolls
+while you drag. Compiling is not evidence that a canvas draws anything.
 
 ## Docs
 

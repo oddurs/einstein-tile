@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { eis, toX, toY } from '../src/eisenstein.js';
-import { apply, compose, isometry, orientation } from '../src/isometry.js';
+import { eis, toX, toY } from '../src/engine/eisenstein.js';
+import { apply, compose, isometry, orientation } from '../src/engine/isometry.js';
 
 const ISOS = [
   isometry(0, false, eis(0, 0)),

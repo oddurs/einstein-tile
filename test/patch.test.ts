@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { isoKey, orientation } from '../src/isometry.js';
-import { buildPatch, vertices } from '../src/patch.js';
-import { bounds, polygon, type Point } from '../src/render.js';
+import { isoKey, orientation } from '../src/engine/isometry.js';
+import { buildPatch, vertices } from '../src/engine/patch.js';
+import { bounds, polygon, type Point } from '../src/engine/render.js';
 
 const PHI = (1 + Math.sqrt(5)) / 2;
 const PHI4 = PHI ** 4; // 6.8541…

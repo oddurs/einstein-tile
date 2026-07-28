@@ -10,7 +10,7 @@ import {
   sub,
   toX,
   toY,
-} from '../src/eisenstein.js';
+} from '../src/engine/eisenstein.js';
 
 const SAMPLES = [eis(0, 0), eis(1, 0), eis(0, 1), eis(5, -1), eis(-3, 7), eis(12, 12)];
 

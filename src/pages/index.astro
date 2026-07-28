@@ -1,0 +1,130 @@
+---
+// Renderer preview (ticket A2). This is a harness, not the explainer —
+// scenes S1 and S2 replace it. See docs/09-sprint-01.md.
+const title = 'einstein tile — renderer preview';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{title}</title>
+    <meta name="description" content="Renderer preview for an interactive einstein tile explainer." />
+  </head>
+  <body>
+    <main data-preview>
+      <canvas data-canvas></canvas>
+
+      <div class="hud">
+        <div class="row">
+          <label for="level">level</label>
+          <input id="level" data-level type="range" min="0" max="5" step="1" value="3" />
+          <button data-fit type="button">fit</button>
+        </div>
+        <div class="row">
+          <label for="scheme">colour</label>
+          <select id="scheme" data-scheme></select>
+          <span data-readout class="readout"></span>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      import { mountPreview } from '../renderer/preview.js';
+      const root = document.querySelector<HTMLElement>('[data-preview]');
+      if (root) mountPreview(root);
+    </script>
+
+    <style>
+      :root {
+        --bg: #faf9f6;
+        --fg: #1e1c1a;
+        --panel: rgba(255, 255, 255, 0.82);
+        --line: rgba(30, 28, 26, 0.16);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #12131a;
+          --fg: #e9e7e3;
+          --panel: rgba(22, 23, 32, 0.82);
+          --line: rgba(233, 231, 227, 0.16);
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        /* 100dvh, not 100vh: mobile address bars resize the viewport mid-scroll
+           and vh units jump with them (docs/06 §4). */
+        height: 100dvh;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font: 400 15px/1.4 ui-sans-serif, system-ui, -apple-system, sans-serif;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      main { position: relative; height: 100%; }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        /* Set in JS too, but declared here so the first frame can't scroll. */
+        touch-action: none;
+      }
+
+      .hud {
+        position: absolute;
+        left: max(12px, env(safe-area-inset-left));
+        right: max(12px, env(safe-area-inset-right));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+      }
+      @media (min-width: 640px) {
+        .hud { right: auto; min-width: 340px; }
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      label {
+        flex: 0 0 3.5rem;
+        font-variant-numeric: tabular-nums;
+        opacity: 0.7;
+      }
+
+      input[type='range'] { flex: 1; min-width: 0; }
+
+      button, select {
+        min-height: 44px; /* touch target floor, docs/06 §4 */
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+      }
+
+      .readout {
+        margin-left: auto;
+        font-variant-numeric: tabular-nums;
+        font-size: 13px;
+        opacity: 0.6;
+      }
+    </style>
+  </body>
+</html>

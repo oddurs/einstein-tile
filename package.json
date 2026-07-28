@@ -1,15 +1,23 @@
 {
-  "name": "@einstein-tile/engine",
+  "name": "einstein-tile",
   "version": "0.1.0",
-  "description": "Exact-arithmetic aperiodic hat tiling engine",
+  "description": "An interactive explainer for the einstein tile — the aperiodic monotile",
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./src/engine/index.ts",
   "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "smoke": "astro build && node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "astro": "^7.1.4"
   },
   "devDependencies": {
+    "playwright": "^1.62.0",
     "typescript": "^5.7.2",
     "vitest": "^3.0.5"
   },

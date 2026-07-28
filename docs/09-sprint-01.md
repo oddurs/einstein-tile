@@ -83,7 +83,18 @@ reach a dead end.
 
 ---
 
-### A1. App shell + deploy — **S**
+### A1. App shell + deploy — **S** — ✅ done
+
+Astro 7 at the repo root; the engine moved to `src/engine/` (via `git mv`, so
+history survives) to leave `src/pages/` free for Astro. One static page, 12 KB of
+JS. `.github/workflows/deploy.yml` runs typecheck → test → build → Pages on push
+to `main`.
+
+`base: '/einstein-tile'` is set for project-site deployment, so the dev URL is
+`localhost:4321/einstein-tile/` — bare `/` 404s. Every in-page URL must go
+through `import.meta.env.BASE_URL` rather than a root-absolute path.
+
+*Original ticket text:*
 
 Astro, TypeScript, one page, canvas island, static build, deploy on push from
 `oddurs/einstein-tile`. No CMS, no router, no backend ([07](07-scope.md)).
@@ -97,7 +108,27 @@ doesn't meter. Either works; decide at wiring time.
 
 ---
 
-### A2. Canvas renderer — **M**
+### A2. Canvas renderer — **M** — ✅ done
+
+`src/renderer/` — `gestures.ts`, `view.ts`, `renderer.ts`, plus a placeholder
+`palette.ts` that A3 replaces. Verified in headless Chromium at a Pixel 7
+viewport (`npm run smoke`): no console errors, canvas backed at dpr 2.625, 1,281
+distinct colours sampled, drag pans, and the page does not scroll during a drag
+— which is the real test of the passive-listener + `touch-action: none` contract.
+
+Two things worth remembering:
+
+- **The view transform is a pure, tested module.** The y-flip (engine y grows up,
+  canvas y grows down) would otherwise produce a patch that renders and pans
+  perfectly while being silently *mirrored* — on a tiling whose reflected tiles
+  are the whole point, a bad bug to ship. 9 tests cover round-trip, zoom
+  anchoring, clamping and fit.
+- **Stroke width is constant on screen at any zoom**, because `lineWidth` is set
+  in world units and the transform scales by `scale`. Stroke visibility
+  therefore keys on *tile* screen size, not stroke width. Got this wrong first
+  time; the wrong version hid outlines when zoomed out for no reason.
+
+*Original ticket text:*
 
 Framework-agnostic module consuming the engine: draw a patch, devicePixelRatio
 handling, pan and drag, pinch-zoom, resize. Canvas 2D — no WebGL this sprint
@@ -105,6 +136,12 @@ handling, pan and drag, pinch-zoom, resize. Canvas 2D — no WebGL this sprint
 
 Gesture vocabulary is fixed and must not vary between scenes: **pinch = zoom,
 drag = pan, always.**
+
+**The performance idea: merge by colour.** Tiles are grouped by colour key and
+merged into one `Path2D` per colour, rebuilt only when the patch or scheme
+changes. A frame is then a handful of `fill()` calls — twelve for the
+orientation scheme — rather than one per tile. Per-frame cost is therefore
+independent of tile count: panning 7,921 tiles costs what panning 25 costs.
 
 **Done when:** a level-4 patch renders and pans smoothly at 60fps on a mid-range
 Android.
