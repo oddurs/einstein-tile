@@ -50,7 +50,7 @@ const HAT_T = 0;
 const TURTLE_T = 1;
 
 const CAPTIONS = [
-  'The hat.',
+  'The hat. Drag, and every edge stretches — but the arrangement will not move.',
   'Every edge is stretching or shrinking — but nothing has moved apart, and nothing overlaps.',
   'Halfway. A shape with no name, and it tiles exactly like the others.',
   'Still going.',

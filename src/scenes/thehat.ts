@@ -30,7 +30,7 @@ import { TileRenderer, type Overlay } from '../renderer/renderer.js';
 const HEXES = [...new Map(HAT_KITES.map((k) => [`${k.centre.a},${k.centre.b}`, k.centre])).values()];
 
 const STEPS = [
-  'Start with a floor of hexagons. Ordinary, and it repeats — you just proved that.',
+  'Start with a floor of hexagons. Ordinary, and it repeats.',
   'Cut each hexagon into six kites.',
   'Now take eight of those kites…',
   '…and that is the whole shape. Nothing exotic: eight kites off a hexagon floor.',

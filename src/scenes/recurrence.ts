@@ -9,9 +9,10 @@
  * can point at occurs again, and again, infinitely often. What never happens is
  * a single slide that carries the *whole* tiling onto itself.
  *
- * It sits directly after scene 3 on purpose. A reader has just watched 46% of
- * tiles align under the best possible slide and may reasonably have concluded
- * "so it nearly repeats" — or, having seen no slide work, "so it's just a mess".
+ * It sits directly after scene 3 on purpose. A reader has just watched a large
+ * minority of tiles align under the best possible slide and may reasonably have
+ * concluded "so it nearly repeats" — or, having seen no slide work, "so it's
+ * just a mess".
  * Both readings are wrong in opposite directions, and this scene answers both
  * with the same demonstration: patches recur; the whole thing doesn't.
  *
@@ -48,7 +49,14 @@ const LEVEL = 3;
 const PATCH = 7;
 const MAX_MARKS = 120;
 
-const IDLE = 'Tap anywhere on the tiling.';
+/**
+ * Says what will happen, not just what to do.
+ *
+ * Most readers scroll and never interact, and a bare instruction tells a
+ * passive reader nothing at all — they see a command they are not following.
+ * Naming the outcome means the scene still lands for someone who never taps.
+ */
+const IDLE = 'Tap anywhere — the same patch will be somewhere else too.';
 
 export function mountRecurrenceScene(root: HTMLElement): () => void {
   const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');

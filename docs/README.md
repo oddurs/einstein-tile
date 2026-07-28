@@ -22,6 +22,7 @@ The name is a pun on German *ein Stein*, "one stone" — nothing to do with Albe
 | [09-sprint-01.md](09-sprint-01.md) | Sprint 1 — the two load-bearing scenes, onto a phone |
 | [10-sprint-02.md](10-sprint-02.md) | Sprint 2 — turn working scenes into a piece you can read |
 | [11-sprint-03.md](11-sprint-03.md) | Sprint 3 — survives contact: viewports, degradation, CI |
+| [14-sprint-05.md](14-sprint-05.md) | Sprint 5 — the cold read: fact audit and an overclaim caught |
 | [13-sprint-04.md](13-sprint-04.md) | Sprint 4 — not one shape but a family: the `Tile(a,b)` continuum |
 | [12-verification.md](12-verification.md) | **What is verified and what isn't** — read before trusting green CI |
 | [references.md](references.md) | Annotated bibliography with links |
