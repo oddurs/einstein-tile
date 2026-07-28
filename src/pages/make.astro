@@ -1,0 +1,249 @@
+---
+// The sandbox. Deliberately a separate place from the piece — see
+// docs/15-sprint-06.md on why the narrative page stays untouched.
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const site = `https://oddurs.github.io${base}/`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Make an einstein tiling</title>
+    <meta
+      name="description"
+      content="Make a tiling from the shape that never repeats — choose how much, what colour and what shape, then take it with you."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Make an einstein tiling" />
+    <meta
+      property="og:description"
+      content="Choose how much, what colour and what shape. Then take it with you."
+    />
+    <meta property="og:image" content={`${site}og.png`} />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+
+  <body>
+    <main data-make>
+      <header class="bar">
+        <a class="back" href={`${base}/`}>← the piece</a>
+        <h1>Make one</h1>
+        <span data-readout class="readout" aria-live="polite"></span>
+      </header>
+
+      <figure class="stage">
+        <canvas
+          data-canvas
+          role="img"
+          aria-label="Your tiling. Its size, colouring and tile shape follow the controls below."
+        ></canvas>
+      </figure>
+
+      <div class="controls">
+        <div class="row">
+          <label for="level">how much</label>
+          <input id="level" data-level type="range" />
+        </div>
+
+        <div class="row">
+          <label for="shape">shape</label>
+          <span aria-hidden="true" class="end">hat</span>
+          <input id="shape" data-shape type="range" />
+          <span aria-hidden="true" class="end">turtle</span>
+        </div>
+
+        <div class="row">
+          <span id="colour-label" class="label">colour</span>
+          <div data-schemes class="schemes" role="group" aria-labelledby="colour-label"></div>
+          <label class="dark">
+            <input data-dark type="checkbox" />
+            dark
+          </label>
+        </div>
+
+        <div class="row actions">
+          <button data-svg type="button">Download SVG</button>
+          <button data-png type="button">Download PNG</button>
+          <button data-share type="button">Copy link</button>
+        </div>
+
+        <p class="note">
+          The SVG is the one to keep — it is exact, so it scales to any size and
+          is what a cutting machine or a printer wants.
+        </p>
+      </div>
+    </main>
+
+    <script>
+      import { mountMake } from '../scenes/make.js';
+      const root = document.querySelector<HTMLElement>('[data-make]');
+      if (root) mountMake(root);
+    </script>
+
+    <noscript>
+      <style>
+        .stage, .controls { display: none; }
+        .bar::after {
+          content: 'This one needs JavaScript — it draws the tiling in your browser.';
+          display: block;
+          padding: 2rem 0;
+          color: var(--muted);
+        }
+      </style>
+    </noscript>
+
+    <style is:global>
+      :root {
+        --bg: #fcfcfb;
+        --fg: #1a1a19;
+        --muted: #62615e;
+        --muted: color-mix(in oklab, #1a1a19 62%, #fcfcfb);
+        --line: rgba(26, 26, 25, 0.14);
+        --accent: #3eb4f1;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1a1a19;
+          --fg: #f0efec;
+          --muted: #a6a5a1;
+          --muted: color-mix(in oklab, #f0efec 66%, #1a1a19);
+          --line: rgba(240, 239, 236, 0.16);
+          --accent: #0e97d2;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        min-height: 100dvh;
+        background: var(--bg);
+        color: var(--fg);
+        font: 400 16px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      main {
+        max-width: 54rem;
+        margin: 0 auto;
+        padding: 0 max(16px, env(safe-area-inset-left)) 4rem;
+      }
+
+      .bar {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        padding: 1.4rem 0 1rem;
+        flex-wrap: wrap;
+      }
+      .back {
+        color: var(--muted);
+        font-size: 13px;
+        text-decoration: none;
+      }
+      .back:hover { color: var(--fg); }
+      h1 {
+        margin: 0;
+        font-family: ui-serif, Georgia, serif;
+        font-size: 1.4rem;
+        font-weight: 400;
+      }
+      .readout {
+        margin-left: auto;
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+        color: var(--muted);
+      }
+
+      .stage {
+        margin: 0 0 1.4rem;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .stage canvas {
+        display: block;
+        width: 100%;
+        height: 58vh;
+        height: 58dvh;
+        max-height: 620px;
+        touch-action: none;
+      }
+      @media (max-height: 560px) {
+        .stage canvas { height: 46dvh; }
+      }
+
+      .controls { display: flex; flex-direction: column; gap: 14px; }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      label, .label {
+        flex: 0 0 5rem;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      input[type='range'] {
+        flex: 1;
+        min-width: 8rem;
+        min-height: 44px;
+      }
+
+      .end { font-size: 12px; color: var(--muted); }
+
+      .schemes { display: flex; gap: 8px; flex-wrap: wrap; }
+
+      button {
+        min-height: 44px;
+        padding: 0 14px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-size: 14px;
+      }
+      button[aria-pressed='true'] {
+        border-color: transparent;
+        background: var(--fg);
+        color: var(--bg);
+      }
+
+      .dark {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: 7px;
+      }
+      .dark input { width: 20px; height: 20px; }
+
+      .actions { gap: 8px; }
+      .actions button { flex: 0 0 auto; }
+
+      .note {
+        margin: 0;
+        font-size: 12.5px;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; animation: none !important; }
+      }
+    </style>
+  </body>
+</html>

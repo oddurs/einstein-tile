@@ -1,63 +1,91 @@
 # einstein-tile
 
-An interactive explainer for the **einstein tile** — the aperiodic monotile found
-by David Smith in 2022 and proved aperiodic by Smith, Myers, Kaplan &
-Goodman-Strauss in 2023.
+**[A shape that never repeats →](https://oddurs.github.io/einstein-tile/)**
 
-> One ordinary-looking shape can cover an infinite floor, and the pattern can
-> never repeat — and here is *why* it can't.
+An interactive explainer for the einstein tile: one ordinary-looking polygon
+that covers an endless floor without the pattern ever repeating. Six scenes,
+about three minutes.
 
-**Status:** early. The tiling engine works and is tested; the web app doesn't
-exist yet. See [`docs/09-sprint-01.md`](docs/09-sprint-01.md) for what's next.
+> Slide a copy of a hexagon floor onto itself and it clicks. Slide a copy of
+> this one and it never does — and there are only thirty-one slides that could
+> possibly have worked, so you can try them all.
+
+Also: **[make one](https://oddurs.github.io/einstein-tile/make/)**.
+
+## What's here
+
+| | |
+| --- | --- |
+| `src/pages/` | The piece. One page, scenes as figures in an article |
+| `src/scenes/` | One module per scene |
+| `src/renderer/` | Canvas 2D renderer, gestures, validated palettes |
+| `src/engine/` | The tiling engine — no DOM, no dependencies |
+| `docs/` | The research, the design decisions, and what is still unverified |
 
 ## The engine
 
-`src/` is a framework-agnostic TypeScript library with no dependencies, no DOM
-and no rendering. It produces **exact** tile placements — integers, not floats.
+`src/engine/` is a standalone TypeScript library with no dependencies and no
+rendering. It produces **exact** tile placements — integers, not floats.
 
 ```ts
-import { buildPatch, polygon, colourKey } from './src/index.js';
+import { buildPatch, polygon, boundaryLoops, deform } from './src/engine/index.js';
 
-const patch = buildPatch(4);        // 7,921 hats
-for (const tile of patch.tiles) {
-  const pts = polygon(tile);        // 13 vertices, drawing coordinates
-  const hue = colourKey(tile, 'orientation');
-}
+const patch = buildPatch(4);              // 7,921 hats, ~3ms
+for (const tile of patch.tiles) polygon(tile);   // 13 vertices each
+boundaryLoops(patch.tiles);               // the true outline of any tile group
+deform(patch.tiles, 0.6, 0.7);            // the same tiling, a different shape
 ```
 
 Tiles live on the half-Eisenstein lattice ℤ[ω] at half scale, where
-ω = e^(iπ/3). Because ω² = ω − 1, rotation by 60° is `(a,b) ↦ (−b, a+b)` and
-reflection is `(a,b) ↦ (a+b, −b)` — both exact integer operations. So a patch at
-substitution level 6 is positioned as precisely as one at level 1, with no
-accumulated drift.
+ω = e^(iπ/3). Since ω² = ω − 1, rotating by 60° is `(a,b) ↦ (−b, a+b)` and
+reflecting is `(a,b) ↦ (a+b, −b)` — both exact integer operations. A patch at
+substitution level 6 is positioned as precisely as one at level 1.
 
-The substitution itself has to run in floating point (the metatile scaffold
-polygons are genuinely irrational), after which every hat is snapped back onto
-the lattice with an *asserted* 1e-6 tolerance — against an observed residual of
+The substitution itself must run in floating point, because the metatile
+scaffold polygons are genuinely irrational; every hat is then snapped back onto
+the lattice with an **asserted** 1e-6 tolerance against an observed residual of
 ~1e-10. Details and measurements in [`docs/08-engine.md`](docs/08-engine.md).
 
-| Level | Tiles | Build | Polygons |
+| level | tiles | build | polygons |
 | --- | --- | --- | --- |
 | 4 | 7,921 | 3 ms | 7 ms |
 | 5 | 54,289 | 13 ms | 40 ms |
 | 6 | 372,100 | 74 ms | 230 ms |
 
-```
+A few things in here were derived rather than looked up, and are written down
+because they were not obvious:
+
+- **The hat's 8 kites**, and the index-12 sublattice their hexagons live on — so
+  overlap is a set-intersection on integers rather than a geometry problem.
+  Alignment turns out to be *relative*, not absolute ([`docs/08`](docs/08-engine.md)).
+- **Exact group outlines** by pairing directed lattice edges, which needs no
+  polygon clipping and no tolerances.
+- **The `Tile(a,b)` deformation.** Every edge has one of two lengths, and the
+  unit vectors of each length class sum to zero *independently* — so the polygon
+  closes for any pair, and a whole tiling can be deformed by walking it.
+
+## Running it
+
+```bash
 npm install
-npm run dev        # Astro dev server
-npm test           # unit tests (engine + view transform)
-npm run typecheck
-npm run smoke      # build, then verify in headless Chromium at a phone viewport
+npm run dev        # the piece, at /einstein-tile/
+npm run verify     # typecheck, 142 unit tests, browser smoke check
+npm run og         # regenerate the share card from the engine
 ```
 
-`npm run smoke` needs browsers once: `npx playwright install chromium`. It
-asserts from real pixels and real events — the canvas is backed at
-devicePixelRatio, it isn't blank, dragging pans it, and the page never scrolls
-while you drag. Compiling is not evidence that a canvas draws anything.
+`npm run verify` needs browsers once: `npx playwright install chromium`.
+
+## What is and isn't verified
+
+[`docs/12-verification.md`](docs/12-verification.md) is the honest version, and
+worth reading before trusting a green build. The short form: the engine and the
+page are checked on every push; **Safari is entirely unverified** because WebKit
+would not install in the development environment; and **no human has read the
+piece**, which is the gap that matters most.
 
 ## Docs
 
-The `docs/` directory is the substance of this repo so far.
+The research came first and is kept separately from the product decisions.
 
 | | |
 | --- | --- |
@@ -66,11 +94,13 @@ The `docs/` directory is the substance of this repo so far.
 | [03 The spectre](docs/03-the-spectre.md) | Chirality and the 2023 follow-up |
 | [04 Implementation](docs/04-implementation.md) | Algorithms and prior art |
 | [05 Frontier](docs/05-frontier.md) | 2024–2026 research, open questions |
-| [06 Webapp design](docs/06-webapp-design.md) | Pedagogy, narrative, mobile UX, stack |
+| [06 Design](docs/06-webapp-design.md) | Pedagogy, narrative, mobile UX |
 | [07 Scope](docs/07-scope.md) | What this teaches, and what it refuses to |
 | [08 Engine](docs/08-engine.md) | Exact-arithmetic design and measurements |
-| [09 Sprint 1](docs/09-sprint-01.md) | Current plan |
+| [12 Verification](docs/12-verification.md) | What is verified, and what isn't |
 | [References](docs/references.md) | Annotated bibliography |
+
+Sprint records are `docs/09`–`11` and `13`–`15`.
 
 ## Credits
 
@@ -80,9 +110,9 @@ Samuel Myers, Craig S. Kaplan and Chaim Goodman-Strauss** —
 [*A chiral aperiodic monotile*](https://arxiv.org/abs/2305.17743), both in
 *Combinatorial Theory* 4 (2024).
 
-The substitution data and float geometry in `src/internal/` are ported from
-Craig Kaplan's [hatviz](https://github.com/isohedral/hatviz) under BSD 3-clause.
-See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+The substitution data and float geometry in `src/engine/internal/` are ported
+from Craig Kaplan's [hatviz](https://github.com/isohedral/hatviz) under BSD
+3-clause. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ## Licence
 

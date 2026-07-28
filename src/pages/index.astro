@@ -307,6 +307,9 @@ const site = `https://oddurs.github.io${base}/`;
           with nobody noticing — it does not look like anything in particular. It
           still doesn’t.
         </p>
+        <p class="make-link">
+          <a href={`${base}/make/`}>Make one of your own →</a>
+        </p>
         <p class="fine">
           <span>Built from the authors’ own substitution data.</span>{' '}
           <a href="https://arxiv.org/abs/2303.10798">Read the paper</a>{' · '}
@@ -650,6 +653,12 @@ const site = `https://oddurs.github.io${base}/`;
         font-size: 0.9em;
         color: var(--muted);
       }
+
+      .make-link {
+        margin: 1.6rem 0;
+        font-size: 1.05em;
+      }
+      .make-link a { text-decoration-thickness: 1px; }
 
       .outro { padding-top: 2rem; }
       .fine { font-size: 0.85em; color: var(--muted); }

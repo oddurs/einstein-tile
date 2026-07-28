@@ -396,6 +396,61 @@ if (proseWords < 400) fail(`only ${proseWords} words survive without JavaScript`
 else pass(`${proseWords} words of prose survive without JavaScript`);
 await plain.close();
 
+// ── /make/ — the takeaway ──────────────────────────────────────────────────
+// Not part of the piece, but it is the one thing a reader leaves with, and a
+// share link that does not reopen the right tiling is worse than no link.
+console.log('\nmake:');
+const make = await context.newPage();
+const makeProblems = [];
+make.on('console', (m) => m.type() === 'error' && makeProblems.push(`console: ${m.text()}`));
+make.on('pageerror', (e) => makeProblems.push(`uncaught: ${e.message}`));
+await make.goto(`http://localhost:${PORT}${BASE}/make/`, { waitUntil: 'networkidle' });
+await make.waitForTimeout(700);
+
+if (makeProblems.length) makeProblems.forEach(fail);
+else pass('no console errors or uncaught exceptions');
+
+const madeReadout = () => make.locator('[data-readout]').textContent().then((t) => t.trim());
+if (!/tiles/.test(await madeReadout())) fail('nothing rendered');
+else pass(`renders (${await madeReadout()})`);
+
+const setRange = async (sel, v) => {
+  await make.locator(sel).evaluate((el, x) => {
+    el.value = String(x);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }, v);
+  await make.waitForTimeout(400);
+};
+await setRange('[data-level]', 2);
+await setRange('[data-shape]', 12);
+await make.locator('[data-schemes] button[data-scheme="orientation"]').click();
+await make.waitForTimeout(300);
+await make.locator('[data-dark]').check();
+await make.waitForTimeout(500);
+
+const madeUrl = make.url();
+if (!/[?&]d=/.test(madeUrl)) fail('the design is not in the URL');
+else pass(`design travels in the URL (${new URL(madeUrl).search})`);
+
+// A share link is only worth having if it reopens the same thing.
+const reopened = await context.newPage();
+await reopened.goto(madeUrl, { waitUntil: 'networkidle' });
+await reopened.waitForTimeout(700);
+const same =
+  (await reopened.locator('[data-readout]').textContent())?.trim() === (await madeReadout()) &&
+  (await reopened.locator('[data-dark]').isChecked()) === true &&
+  (await reopened.locator('[data-schemes] button[aria-pressed="true"]').textContent()) === 'rotation';
+if (!same) fail('a shared link does not reopen the same tiling');
+else pass('a shared link reopens the same tiling');
+await reopened.close();
+
+const download = make.waitForEvent('download', { timeout: 9000 }).catch(() => null);
+await make.locator('[data-svg]').click();
+const file = await download;
+if (!file) fail('SVG export produced no download');
+else pass(`exports SVG (${file.suggestedFilename()})`);
+await make.close();
+
 await browser.close();
 server.close();
 
