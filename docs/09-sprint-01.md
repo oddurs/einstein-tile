@@ -33,9 +33,11 @@ in parallel with the hard engine work that scene 3 needs.
 provenance and the arXiv reference are recorded in the commit message, not only
 in doc comments.
 
-*No remote yet* — creating a GitHub repo is a separate call, since it decides
-whether this is public. Sprint tracking lives in this file rather than Linear:
-the only Linear team is the Sava company workspace, and this is a side project.
+Remote: **github.com/oddurs/einstein-tile**, private for now. Flip to public at
+launch — the direction that isn't reversible.
+
+Sprint tracking lives in this file, not Linear. The only Linear team is the Sava
+company workspace and this is a side project, so it stays out of there.
 
 ---
 
@@ -81,8 +83,15 @@ reach a dead end.
 
 ### A1. App shell + deploy — **S**
 
-Astro, TypeScript, one page, canvas island, static build, deploy on push. No CMS,
-no router, no backend ([07](07-scope.md)).
+Astro, TypeScript, one page, canvas island, static build, deploy on push from
+`oddurs/einstein-tile`. No CMS, no router, no backend ([07](07-scope.md)).
+
+Host is undecided. One constraint worth knowing early: **GitHub Pages does not
+serve private repos on a free account.** So either the repo goes public sooner
+than launch, or the host is Cloudflare Pages / Netlify / Vercel, all of which
+deploy a private repo's static output on their free tiers. Cloudflare Pages is
+the default pick — no bandwidth metering, which matters if this gets posted
+somewhere and spikes.
 
 **Done when:** a URL exists that someone can open on a phone.
 
