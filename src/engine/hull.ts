@@ -134,6 +134,35 @@ export function boundaryLoops(tiles: readonly Tile[]): Eis[][] {
   return loops;
 }
 
+/** A directed boundary segment, one lattice step long. */
+export interface BoundaryStep {
+  readonly from: Eis;
+  readonly to: Eis;
+}
+
+/**
+ * Every unpaired directed edge, as single lattice steps — the board's exposed
+ * frontier, un-simplified.
+ *
+ * `boundaryLoops` merges collinear runs, which is right for drawing and wrong
+ * for placement: a hat's long edge can abut *two* unit steps of the frontier, so
+ * enumerating attachments against merged edges would miss legal moves.
+ *
+ * Steps run counter-clockwise around occupied area, so the free space is on the
+ * right of each one.
+ */
+export function boundarySteps(tiles: readonly Tile[]): BoundaryStep[] {
+  const edges = new Map<string, BoundaryStep>();
+  for (const tile of tiles) {
+    for (const [from, to] of directedEdges(windCCW(vertices(tile)))) {
+      const backward = `${key(to)}|${key(from)}`;
+      if (edges.has(backward)) edges.delete(backward);
+      else edges.set(`${key(from)}|${key(to)}`, { from, to });
+    }
+  }
+  return [...edges.values()];
+}
+
 /** Drop vertices that sit in the middle of a straight run. */
 function simplify(loop: readonly Eis[]): Eis[] {
   const n = loop.length;

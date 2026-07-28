@@ -47,6 +47,19 @@ export {
 export { boundaryLoops, groupByAncestor, signedArea2 } from './hull.js';
 
 export {
+  type Board,
+  deadHoles,
+  frontier,
+  greedyWalk,
+  holes,
+  legalMoves,
+  makeBoard,
+  movesAlongStep,
+} from './moves.js';
+
+export { type BoundaryStep, boundarySteps } from './hull.js';
+
+export {
   type Kite,
   HAT_KITES,
   KiteIndex,
