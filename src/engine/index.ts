@@ -47,6 +47,18 @@ export {
 export { boundaryLoops, groupByAncestor, signedArea2 } from './hull.js';
 
 export {
+  type Kite,
+  HAT_KITES,
+  KiteIndex,
+  cosetOf,
+  hexCoset,
+  kiteKey,
+  kiteOutline,
+  kites,
+  overlaps,
+} from './kites.js';
+
+export {
   type ColourScheme,
   type Point,
   bounds,
