@@ -77,7 +77,7 @@ export class TileRenderer {
   private mode: ColourMode;
   private palette: Palette;
   private padding: number;
-  private onTap: RendererOptions['onTap'];
+  private tapOption: RendererOptions['onTap'];
 
   /** Called after any pan or zoom, so scenes can react to the view. */
   onViewChange: ((view: Readonly<View>) => void) | null = null;
@@ -87,6 +87,8 @@ export class TileRenderer {
    * camera. Pinch-zoom is unaffected.
    */
   onDragWorld: ((dx: number, dy: number) => void) | null = null;
+  /** Assignable after construction, for scenes that decide late. */
+  onTap: ((world: Point) => void) | null = null;
 
   private colourOverride: ((tile: Tile) => string) | null = null;
   /**
@@ -127,7 +129,7 @@ export class TileRenderer {
     this.dark = opts.dark ?? false;
     this.mode = opts.mode ?? 'accessible';
     this.padding = opts.padding ?? 0.06;
-    this.onTap = opts.onTap;
+    this.tapOption = opts.onTap;
     this.palette = this.buildPalette();
 
     // Required for passive pointer listeners — see gestures.ts.
@@ -147,7 +149,11 @@ export class TileRenderer {
         this.view = zoomAt(this.view, factor, cx, cy);
         this.viewChanged();
       },
-      onTap: (x, y) => this.onTap?.(toWorld(this.view, x, y)),
+      onTap: (x, y) => {
+        const world = toWorld(this.view, x, y);
+        this.onTap?.(world);
+        this.tapOption?.(world);
+      },
     });
 
     this.resizeObserver = new ResizeObserver(() => this.syncSize());

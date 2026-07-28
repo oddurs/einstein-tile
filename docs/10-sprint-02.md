@@ -68,7 +68,18 @@ scene holds a canvas.
 
 ---
 
-### N2. Scene 2 — meet the hat — **S**
+### N2. Scene 2 — meet the hat — **S** — ✅ done
+
+`src/scenes/thehat.ts`. Four steps: three hexagons → cut into kites → take
+eight → that is the shape. The hexagons stay fixed throughout, which is what
+makes it read as *"the hat comes from here"* rather than as four unrelated
+pictures. Tap anywhere or drag the slider.
+
+Placed **before** scene 3 rather than after, so a reader meets an ordinary
+polygon before being asked to care what it does. Uses `HAT_KITES` unchanged —
+zero new engine work, as predicted.
+
+*Original ticket text:*
 
 *One sentence: this is an ordinary shape, and you could have drawn it.*
 

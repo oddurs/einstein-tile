@@ -30,6 +30,36 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </p>
       </header>
 
+      <!-- Scene 2 — meet the hat -->
+      <section class="scene" data-scene="hat" aria-labelledby="h-hat">
+        <div class="prose">
+          <h2 id="h-hat">The shape itself</h2>
+          <p>
+            Before any of that: this is not an exotic object. Take a floor of
+            hexagons, cut each one into six kites, and glue eight of the kites
+            together.
+          </p>
+        </div>
+
+        <figure class="stage">
+          <canvas data-canvas aria-describedby="alt-hat"></canvas>
+          <figcaption class="hud">
+            <p data-caption class="hud-prompt"></p>
+            <div class="hud-row slider-row">
+              <label for="step-2" class="visually-hidden">construction step</label>
+              <input id="step-2" data-step type="range" />
+              <span data-readout class="meter"></span>
+            </div>
+          </figcaption>
+        </figure>
+
+        <p id="alt-hat" class="takeaway">
+          The hat is eight kites cut from a hexagon floor — a thirteen-sided
+          polygon with no unusual angles. Shapes like it had been catalogued and
+          overlooked before, because nobody had tried to tile with one.
+        </p>
+      </section>
+
       <!-- Scene 3 — try to make it repeat -->
       <section class="scene" data-scene="repeat" aria-labelledby="h-repeat">
         <div class="prose">
@@ -116,10 +146,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     <script>
       import { mountScenes } from '../scenes/stage.js';
+      import { mountHatScene } from '../scenes/thehat.js';
       import { mountRepeatScene } from '../scenes/repeat.js';
       import { mountHierarchyScene } from '../scenes/hierarchy.js';
 
       mountScenes({
+        hat: mountHatScene,
         repeat: mountRepeatScene,
         hierarchy: mountHierarchyScene,
       });
