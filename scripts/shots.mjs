@@ -129,6 +129,19 @@ async function nudge(page, scope, sel) {
 
 const server = await serve();
 const browser = await launch();
+/**
+ * Three widths, not one.
+ *
+ * Shooting only a phone let a real regression through in sprint 7: the reading
+ * measure stopped being defined, and desktop prose ran to 82 characters a line
+ * — invisible at 412px, where the column is already narrower than the measure.
+ * "Pixel-identical" is only worth as much as the viewports it was checked at.
+ */
+const VIEWPORTS = [
+  { name: 'phone', width: 412, height: 839 },
+  { name: 'desktop', width: 1440, height: 900 },
+];
+
 const context = await browser.newContext({
   viewport: { width: 412, height: 839 },
   deviceScaleFactor: 2,
@@ -143,8 +156,10 @@ const dir = new URL(`../.shots/${OUT}/`, import.meta.url).pathname;
 await mkdir(dir, { recursive: true });
 const hashes = {};
 
-for (const shot of SHOTS) {
+for (const vp of VIEWPORTS) {
+ for (const shot of SHOTS) {
   const page = await context.newPage();
+  await page.setViewportSize({ width: vp.width, height: vp.height });
   await page.goto(`http://localhost:${PORT}${BASE}${shot.path}`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(700);
 
@@ -157,9 +172,11 @@ for (const shot of SHOTS) {
 
   const target = scope ?? page;
   const buffer = await target.screenshot();
-  await writeFile(join(dir, `${shot.name}.png`), buffer);
-  hashes[shot.name] = createHash('sha256').update(buffer).digest('hex').slice(0, 16);
+  const key = `${vp.name}/${shot.name}`;
+  await writeFile(join(dir, `${key.replace('/', '-')}.png`), buffer);
+  hashes[key] = createHash('sha256').update(buffer).digest('hex').slice(0, 16);
   await page.close();
+ }
 }
 
 await writeFile(join(dir, 'hashes.json'), `${JSON.stringify(hashes, null, 2)}\n`);
@@ -167,7 +184,7 @@ await browser.close();
 server.close();
 
 if (!DIFF) {
-  console.log(`captured ${SHOTS.length} shots → .shots/${OUT}/`);
+  console.log(`captured ${Object.keys(hashes).length} shots → .shots/${OUT}/`);
   for (const [k, v] of Object.entries(hashes)) console.log(`  ${k.padEnd(14)} ${v}`);
 } else {
   const prior = JSON.parse(
@@ -183,8 +200,8 @@ if (!DIFF) {
   }
   console.log(
     changed
-      ? `\n${changed} of ${SHOTS.length} surfaces changed — expected zero for a refactor`
-      : `\nall ${SHOTS.length} surfaces pixel-identical`,
+      ? `\n${changed} of ${Object.keys(hashes).length} surfaces changed — expected zero for a refactor`
+      : `\nall ${Object.keys(hashes).length} surfaces pixel-identical`,
   );
   process.exitCode = changed ? 1 : 0;
 }
