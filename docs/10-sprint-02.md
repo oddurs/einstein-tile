@@ -152,7 +152,28 @@ Respect `prefers-reduced-motion`: render the patch, skip the growth.
 
 ---
 
-### N5. The copy pass — **M**
+### N5. The copy pass — **M** — ✅ done
+
+597 words, ~3 minutes. The arc holds as pure text with every canvas removed,
+which is the test that matters: hook → fifty years stuck → the shape is ordinary
+→ what "repeats" means → it never aligns → two wrong conclusions → patches recur
+→ orderly *and* non-repeating → the hierarchy → afterwards.
+
+Both threads landed as prose rather than scenes, as planned: David Smith with
+card and scissors in the standfirst and the outro, and the 20,426 → 6 → 2 → stuck
+history as the lead-in to scene 2, where it motivates *why anyone cares* about
+an ordinary-looking polygon.
+
+**Scene 6 got absorbed.** [07](07-scope.md) scoped the reflection problem and the
+spectre as their own scene. It turns out to work better as one honest paragraph
+in the outro — the hat needs mirrors, some people objected, the same four authors
+answered it two months later. The scope doc's "one closing line at most" for the
+enrichment material was right.
+
+The closing beat is deliberately not triumphant: nobody has a theory of *which*
+shapes do this, which is exactly why the hat sat in catalogues unnoticed.
+
+*Original ticket text:*
 
 The one ticket with no code. Every scene gets real prose at the register settled
 in [06 §8](06-webapp-design.md) — adult, no jargon, no exclamation marks, no
