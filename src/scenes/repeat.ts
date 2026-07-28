@@ -154,7 +154,10 @@ export function mountRepeatScene(root: HTMLElement): () => void {
       true,
     );
     title.textContent = COPY[which].title;
-    next.hidden = which === 'hats';
+    // Hidden until the reader has actually made the floor click. Showing it up
+    // front gives away that there is a second act and invites skipping the
+    // first — and the first act is what makes the second mean anything.
+    next.hidden = true;
     next.textContent = 'Now try the hat →';
     draw();
   };
@@ -219,6 +222,9 @@ export function mountRepeatScene(root: HTMLElement): () => void {
       if (act === 'hexagons') next.hidden = false;
       return;
     }
+
+    // Escape hatch: never strand someone who cannot find the alignment.
+    if (act === 'hexagons' && tried.size >= 6) next.hidden = false;
 
     // Only draw the conclusion once the reader has genuinely hunted, so it reads
     // as something they found rather than something asserted at them. This has

@@ -1,7 +1,6 @@
 ---
-// Renderer preview (ticket A2). This is a harness, not the explainer —
-// scenes S1 and S2 replace it. See docs/09-sprint-01.md.
-const title = 'einstein tile — renderer preview';
+// The piece. One page, scenes as sections. See docs/10-sprint-02.md.
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <!doctype html>
@@ -10,171 +9,362 @@ const title = 'einstein tile — renderer preview';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
-    <title>{title}</title>
-    <meta name="description" content="Renderer preview for an interactive einstein tile explainer." />
+    <title>A shape that never repeats</title>
+    <meta
+      name="description"
+      content="One ordinary-looking shape can cover an infinite floor, and the pattern can never repeat. Here is why it can't."
+    />
+    <link rel="canonical" href={`https://oddurs.github.io${base}/`} />
   </head>
+
   <body>
-    <main data-preview>
-      <canvas data-canvas></canvas>
+    <article>
+      <header class="lede">
+        <p class="eyebrow">The einstein tile</p>
+        <h1>A shape that never repeats</h1>
+        <p class="standfirst">
+          In 2022 a retired print technician, cutting shapes out of card at his
+          kitchen table, found something mathematicians had hunted for fifty
+          years: a single tile that covers an endless floor without the pattern
+          ever repeating. Here is what that means, and why it can’t.
+        </p>
+      </header>
 
-      <nav class="scenes">
-        <a href={`${import.meta.env.BASE_URL}/scene-3/`.replace(/\/+/g, '/')}>Scene 3 · try to make it repeat</a>
-        <a href={`${import.meta.env.BASE_URL}/scene-5/`.replace(/\/+/g, '/')}>Scene 5 · why it can’t</a>
-      </nav>
+      <!-- Scene 3 — try to make it repeat -->
+      <section class="scene" data-scene="repeat" aria-labelledby="h-repeat">
+        <div class="prose">
+          <h2 id="h-repeat">What “repeats” actually means</h2>
+          <p>
+            A pattern repeats when you can slide a copy of it onto itself and
+            have everything land. That is not a figure of speech — it is the
+            whole definition. Try it on a hexagon floor, then try it on this.
+          </p>
+        </div>
 
-      <div class="hud">
-        <div class="row">
-          <label for="level">level</label>
-          <input id="level" data-level type="range" min="0" max="5" step="1" value="3" />
-          <button data-fit type="button">fit</button>
+        <figure class="stage">
+          <canvas data-canvas aria-describedby="alt-repeat"></canvas>
+          <figcaption class="hud">
+            <h3 data-title class="hud-title"></h3>
+            <p data-prompt class="hud-prompt"></p>
+            <div class="gauge">
+              <div class="track"><div data-bar class="bar"></div></div>
+              <span data-meter class="meter"></span>
+            </div>
+            <div class="hud-row">
+              <button data-next type="button" hidden></button>
+              <button data-reset type="button">Show me the best there is</button>
+            </div>
+          </figcaption>
+        </figure>
+
+        <p id="alt-repeat" class="takeaway">
+          A hexagon floor slides onto itself perfectly. The einstein tiling never
+          does — the closest any slide gets is 46% of tiles landing.
+        </p>
+      </section>
+
+      <!-- Scene 5 — the hierarchy -->
+      <section class="scene" data-scene="hierarchy" aria-labelledby="h-hierarchy">
+        <div class="prose">
+          <h2 id="h-hierarchy">Why it can’t</h2>
+          <p>
+            Zoom out, and the tiles turn out to be grouped — and the groups are
+            grouped, and those groups are grouped, all the way up.
+          </p>
         </div>
-        <div class="row">
-          <label for="scheme">colour</label>
-          <select id="scheme" data-scheme></select>
-          <span data-readout class="readout"></span>
-        </div>
-        <div class="row">
-          <label for="vivid">vivid</label>
-          <input id="vivid" data-vivid type="checkbox" />
-          <span class="note">
-            off = colour-vision-safe. Only affects <em>orientation</em>; the other
-            two schemes are safe either way.
-          </span>
-        </div>
-      </div>
-    </main>
+
+        <figure class="stage">
+          <canvas data-canvas aria-describedby="alt-hierarchy"></canvas>
+          <figcaption class="hud">
+            <p data-caption class="hud-prompt"></p>
+            <div class="hud-row slider-row">
+              <span aria-hidden="true" class="end">tiles</span>
+              <label for="stage-5" class="visually-hidden">grouping level</label>
+              <input id="stage-5" data-stage type="range" />
+              <span aria-hidden="true" class="end">whole</span>
+            </div>
+            <p class="hint">
+              Pinch or scroll to zoom — the grouping follows.
+              <span data-readout class="meter"></span>
+            </p>
+          </figcaption>
+        </figure>
+
+        <p id="alt-hierarchy" class="takeaway">
+          Tiles group into four kinds of cluster; those clusters group into the
+          same four kinds, larger; and so on without end. A repeating pattern
+          needs a block you can stamp out. This has no such block at any size —
+          which is exactly why it can never repeat.
+        </p>
+      </section>
+
+      <footer class="outro">
+        <p>
+          The shape is called <strong>the hat</strong>. David Smith found it in
+          November 2022; he worked out what it meant with Joseph Samuel Myers,
+          Craig S. Kaplan and Chaim Goodman-Strauss, who published the proof in
+          March 2023. It had been catalogued before, and overlooked, more than
+          once.
+        </p>
+        <p class="fine">
+          <span>Built from the authors’ own substitution data.</span>{' '}
+          <a href="https://arxiv.org/abs/2303.10798">Read the paper</a>{' · '}
+          <a href="https://github.com/oddurs/einstein-tile">source</a>
+        </p>
+      </footer>
+    </article>
 
     <script>
-      import { mountPreview } from '../renderer/preview.js';
-      const root = document.querySelector<HTMLElement>('[data-preview]');
-      if (root) mountPreview(root);
+      import { mountScenes } from '../scenes/stage.js';
+      import { mountRepeatScene } from '../scenes/repeat.js';
+      import { mountHierarchyScene } from '../scenes/hierarchy.js';
+
+      mountScenes({
+        repeat: mountRepeatScene,
+        hierarchy: mountHierarchyScene,
+      });
     </script>
 
-    <style>
-      /* Surfaces match palette.ts SURFACE exactly — the palette's CVD and
-         contrast numbers were computed against these, so the page chrome must
-         not drift from them. */
+    <style is:global>
+      /* Surfaces match palette.ts SURFACE — every contrast and CVD number in
+         the palette was computed against exactly these. */
       :root {
         --bg: #fcfcfb;
         --fg: #1a1a19;
-        --panel: rgba(252, 252, 251, 0.85);
-        --line: rgba(26, 26, 25, 0.16);
+        --muted: color-mix(in oklab, #1a1a19 62%, #fcfcfb);
+        --panel: rgba(252, 252, 251, 0.92);
+        --line: rgba(26, 26, 25, 0.14);
+        --accent: #3eb4f1;
+        --good: #1f9d55;
+        --measure: 34rem;
       }
       @media (prefers-color-scheme: dark) {
         :root {
           --bg: #1a1a19;
           --fg: #f0efec;
-          --panel: rgba(26, 26, 25, 0.85);
-          --line: rgba(240, 239, 236, 0.18);
+          --muted: color-mix(in oklab, #f0efec 66%, #1a1a19);
+          --panel: rgba(26, 26, 25, 0.92);
+          --line: rgba(240, 239, 236, 0.16);
+          --accent: #0e97d2;
+          --good: #35b26a;
         }
       }
 
       * { box-sizing: border-box; }
 
-      html, body {
+      html { scroll-behavior: smooth; }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        * { transition: none !important; animation: none !important; }
+      }
+
+      body {
         margin: 0;
-        /* 100dvh, not 100vh: mobile address bars resize the viewport mid-scroll
-           and vh units jump with them (docs/06 §4). */
-        height: 100dvh;
-        overflow: hidden;
         background: var(--bg);
         color: var(--fg);
-        font: 400 15px/1.4 ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font: 400 clamp(17px, 1.1vw + 15px, 19px)/1.6 ui-serif, Georgia,
+          'Times New Roman', serif;
         -webkit-text-size-adjust: 100%;
       }
 
-      main { position: relative; height: 100%; }
+      article {
+        max-width: 62rem;
+        margin: 0 auto;
+        padding: 0 max(20px, env(safe-area-inset-left)) 8rem;
+      }
 
-      canvas {
+      .prose, .lede, .outro, .takeaway {
+        max-width: var(--measure);
+        margin-inline: auto;
+      }
+
+      .lede { padding: 22vh 0 12vh; }
+
+      .eyebrow {
+        margin: 0 0 1.2rem;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      h1 {
+        margin: 0 0 1.4rem;
+        font-size: clamp(2.4rem, 7vw, 4rem);
+        font-weight: 400;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+      }
+
+      .standfirst {
+        margin: 0;
+        font-size: 1.12em;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      h2 {
+        margin: 0 0 0.8rem;
+        font-size: clamp(1.5rem, 3.6vw, 2rem);
+        font-weight: 400;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+      }
+
+      p { margin: 0 0 1.1rem; }
+
+      .scene { margin: 0 0 14vh; }
+
+      /* The stage is deliberately NOT full-height. The canvas takes
+         `touch-action: none` so it can own drag and pinch, which means a
+         full-bleed canvas would swallow vertical scrolling and strand a reader
+         on a phone. Keeping it under two-thirds of the viewport guarantees
+         there is always ordinary page above and below to scroll with. */
+      .stage {
+        position: relative;
+        margin: 2rem 0;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+
+      .stage canvas {
         display: block;
         width: 100%;
-        height: 100%;
-        /* Set in JS too, but declared here so the first frame can't scroll. */
+        height: 62dvh;
+        max-height: 640px;
         touch-action: none;
       }
 
       .hud {
-        position: absolute;
-        left: max(12px, env(safe-area-inset-left));
-        right: max(12px, env(safe-area-inset-right));
-        bottom: max(12px, env(safe-area-inset-bottom));
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 12px;
-        border: 1px solid var(--line);
-        border-radius: 12px;
+        padding: 16px 18px;
+        border-top: 1px solid var(--line);
         background: var(--panel);
-        backdrop-filter: blur(12px);
-      }
-      @media (min-width: 640px) {
-        .hud { right: auto; min-width: 340px; }
       }
 
-      .row {
+      .hud-title {
+        margin: 0 0 6px;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .hud-prompt {
+        margin: 0 0 12px;
+        font-size: 1em;
+        line-height: 1.4;
+        text-wrap: balance;
+        min-height: 2.8em;
+      }
+
+      .hud-row { display: flex; align-items: center; gap: 10px; }
+      .slider-row { gap: 12px; }
+
+      .gauge {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
+        margin-bottom: 12px;
       }
 
-      label {
-        flex: 0 0 3.5rem;
+      .track {
+        flex: 1;
+        height: 8px;
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--fg) 12%, transparent);
+        overflow: hidden;
+      }
+      .bar {
+        height: 100%;
+        width: 0;
+        border-radius: 999px;
+        background: var(--accent);
+        transition: width 90ms linear;
+      }
+      .bar[data-perfect='true'] { background: var(--good); }
+
+      .meter {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 12.5px;
         font-variant-numeric: tabular-nums;
-        opacity: 0.7;
+        color: var(--muted);
+        white-space: nowrap;
       }
 
-      input[type='range'] { flex: 1; min-width: 0; }
+      .hint {
+        display: flex;
+        gap: 10px;
+        margin: 10px 0 0;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .hint .meter { margin-left: auto; }
 
-      button, select {
-        min-height: 44px; /* touch target floor, docs/06 §4 */
-        padding: 0 12px;
+      .end {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 12px;
+        text-transform: lowercase;
+        color: var(--muted);
+      }
+
+      input[type='range'] { flex: 1; min-width: 0; min-height: 44px; }
+
+      button {
+        min-height: 44px;
+        padding: 0 16px;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 9px;
         background: transparent;
         color: inherit;
-        font: inherit;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 14px;
+      }
+      button[data-next]:not([hidden]) {
+        border-color: transparent;
+        background: var(--fg);
+        color: var(--bg);
       }
 
-      .readout {
-        margin-left: auto;
-        font-variant-numeric: tabular-nums;
-        font-size: 13px;
-        opacity: 0.6;
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 4px;
       }
 
-      .scenes {
-        position: absolute;
-        top: max(12px, env(safe-area-inset-top));
-        left: max(12px, env(safe-area-inset-left));
-        right: max(12px, env(safe-area-inset-right));
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-      .scenes a {
-        padding: 10px 14px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: var(--panel);
-        backdrop-filter: blur(12px);
-        color: inherit;
-        font-size: 13px;
-        text-decoration: none;
-      }
-
-      .note {
-        font-size: 12px;
-        line-height: 1.35;
-        opacity: 0.6;
-      }
-
-      input[type='checkbox'] {
-        width: 22px;
-        height: 22px;
+      /* The takeaway is the scene's meaning in words. It carries the point for
+         anyone who cannot use the canvas, and for anyone who skims. */
+      .takeaway {
         margin: 0;
-        /* the 44px touch floor is met by padding the row, not the box itself */
-        flex: 0 0 auto;
+        padding-left: 1rem;
+        border-left: 2px solid var(--line);
+        font-size: 0.95em;
+        color: var(--muted);
       }
+
+      .outro { padding-top: 2rem; }
+      .fine { font-size: 0.85em; color: var(--muted); }
+      a { color: inherit; text-underline-offset: 3px; }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      [data-failed='true'] .stage { display: none; }
     </style>
   </body>
 </html>

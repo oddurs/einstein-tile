@@ -1,0 +1,180 @@
+---
+// Developer harness — NOT part of the piece. Lives at /preview/ and is
+// deliberately unlinked from the narrative page. See docs/10-sprint-02.md N1.
+const title = 'einstein tile — renderer preview';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{title}</title>
+    <meta name="description" content="Renderer preview." />
+    <meta name="robots" content="noindex" />
+  </head>
+  <body>
+    <main data-preview>
+      <canvas data-canvas></canvas>
+
+      <nav class="scenes">
+        <a href={import.meta.env.BASE_URL}>← the piece</a>
+      </nav>
+
+      <div class="hud">
+        <div class="row">
+          <label for="level">level</label>
+          <input id="level" data-level type="range" min="0" max="5" step="1" value="3" />
+          <button data-fit type="button">fit</button>
+        </div>
+        <div class="row">
+          <label for="scheme">colour</label>
+          <select id="scheme" data-scheme></select>
+          <span data-readout class="readout"></span>
+        </div>
+        <div class="row">
+          <label for="vivid">vivid</label>
+          <input id="vivid" data-vivid type="checkbox" />
+          <span class="note">
+            off = colour-vision-safe. Only affects <em>orientation</em>; the other
+            two schemes are safe either way.
+          </span>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      import { mountPreview } from '../renderer/preview.js';
+      const root = document.querySelector<HTMLElement>('[data-preview]');
+      if (root) mountPreview(root);
+    </script>
+
+    <style>
+      /* Surfaces match palette.ts SURFACE exactly — the palette's CVD and
+         contrast numbers were computed against these, so the page chrome must
+         not drift from them. */
+      :root {
+        --bg: #fcfcfb;
+        --fg: #1a1a19;
+        --panel: rgba(252, 252, 251, 0.85);
+        --line: rgba(26, 26, 25, 0.16);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1a1a19;
+          --fg: #f0efec;
+          --panel: rgba(26, 26, 25, 0.85);
+          --line: rgba(240, 239, 236, 0.18);
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        /* 100dvh, not 100vh: mobile address bars resize the viewport mid-scroll
+           and vh units jump with them (docs/06 §4). */
+        height: 100dvh;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font: 400 15px/1.4 ui-sans-serif, system-ui, -apple-system, sans-serif;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      main { position: relative; height: 100%; }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        /* Set in JS too, but declared here so the first frame can't scroll. */
+        touch-action: none;
+      }
+
+      .hud {
+        position: absolute;
+        left: max(12px, env(safe-area-inset-left));
+        right: max(12px, env(safe-area-inset-right));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+      }
+      @media (min-width: 640px) {
+        .hud { right: auto; min-width: 340px; }
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      label {
+        flex: 0 0 3.5rem;
+        font-variant-numeric: tabular-nums;
+        opacity: 0.7;
+      }
+
+      input[type='range'] { flex: 1; min-width: 0; }
+
+      button, select {
+        min-height: 44px; /* touch target floor, docs/06 §4 */
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+      }
+
+      .readout {
+        margin-left: auto;
+        font-variant-numeric: tabular-nums;
+        font-size: 13px;
+        opacity: 0.6;
+      }
+
+      .scenes {
+        position: absolute;
+        top: max(12px, env(safe-area-inset-top));
+        left: max(12px, env(safe-area-inset-left));
+        right: max(12px, env(safe-area-inset-right));
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .scenes a {
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        color: inherit;
+        font-size: 13px;
+        text-decoration: none;
+      }
+
+      .note {
+        font-size: 12px;
+        line-height: 1.35;
+        opacity: 0.6;
+      }
+
+      input[type='checkbox'] {
+        width: 22px;
+        height: 22px;
+        margin: 0;
+        /* the 44px touch floor is met by padding the row, not the box itself */
+        flex: 0 0 auto;
+      }
+    </style>
+  </body>
+</html>
