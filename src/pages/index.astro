@@ -19,7 +19,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   <body>
     <article>
-      <header class="lede">
+      <header class="lede" data-scene="hook">
+        <figure class="hero" aria-hidden="true">
+          <canvas data-canvas></canvas>
+        </figure>
         <p class="eyebrow">The einstein tile</p>
         <h1>A shape that never repeats</h1>
         <p class="standfirst">
@@ -175,12 +178,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     <script>
       import { mountScenes } from '../scenes/stage.js';
+      import { mountHookScene } from '../scenes/hook.js';
       import { mountHatScene } from '../scenes/thehat.js';
       import { mountRepeatScene } from '../scenes/repeat.js';
       import { mountRecurrenceScene } from '../scenes/recurrence.js';
       import { mountHierarchyScene } from '../scenes/hierarchy.js';
 
       mountScenes({
+        hook: mountHookScene,
         hat: mountHatScene,
         repeat: mountRepeatScene,
         recurrence: mountRecurrenceScene,
@@ -241,7 +246,37 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         margin-inline: auto;
       }
 
-      .lede { padding: 22vh 0 12vh; }
+      .lede {
+        position: relative;
+        padding: 20vh 0 12vh;
+      }
+
+      /* The hook is decoration behind the title: aria-hidden, pointer-events
+         none so it never eats a scroll, and faded so the type stays the thing
+         you read first. */
+      .hero {
+        position: absolute;
+        inset: -10vh -22vw auto;
+        margin: 0;
+        height: 52vh;
+        pointer-events: none;
+        opacity: 0.26;
+        /* Two masks, multiplied: a radial one to keep it from meeting the page
+           edges, and a linear one so it has faded out entirely before the
+           standfirst begins. Texture behind body copy is the fastest way to
+           make an editorial page look cheap and read badly. */
+        mask-image:
+          radial-gradient(110% 80% at 50% 25%, #000 25%, transparent 75%),
+          linear-gradient(#000 42%, transparent 72%);
+        mask-composite: intersect;
+        -webkit-mask-composite: source-in;
+      }
+      @media (prefers-color-scheme: dark) {
+        .hero { opacity: 0.4; }
+      }
+      .hero canvas { display: block; width: 100%; height: 100%; }
+
+      .lede > :not(.hero) { position: relative; }
 
       .eyebrow {
         margin: 0 0 1.2rem;

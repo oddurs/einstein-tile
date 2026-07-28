@@ -128,7 +128,22 @@ the selection matches under *s*, which is `alignment` restricted to a subset.
 
 ---
 
-### N4. Scene 0 — the hook — **S**
+### N4. Scene 0 — the hook — **S** — ✅ done
+
+`src/scenes/hook.ts`. A level-4 patch fades in outward from the centre over
+~2.6s, eased so it reads as a floor being laid rather than a progress bar.
+Geometry and draw order are computed once; the animation only changes how many
+tiles are drawn, so no per-frame allocation happens.
+
+`aria-hidden`, `pointer-events: none`, and under `prefers-reduced-motion` the
+patch simply appears — the growth is decoration, the tiling is the content, and
+nobody should sit through an effect to see it.
+
+Tuned after looking at it: the first version put texture behind the standfirst,
+which is the fastest way to make an editorial page look cheap and read badly.
+Two composited masks now fade it out entirely before the body copy starts.
+
+*Original ticket text:*
 
 Ambient tiling growing behind the title. No interaction, no controls. Its only
 job is *"…wait, is that repeating?"* and to make the reader keep going.
