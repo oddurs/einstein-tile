@@ -119,11 +119,17 @@ const heading = (await page.locator('h1').first().textContent())?.trim();
 if (!heading) fail('no h1');
 else pass(`titled "${heading}"`);
 
-// Every scene must carry its meaning in text as well as in pixels.
+// Every scene that carries meaning must carry it in text as well as in pixels.
+// `data-decorative` marks the ones that do not — the hook is aria-hidden
+// ornament, and demanding a text alternative for it would be cargo-culting.
 const takeaways = await page.locator('.takeaway').count();
-const sceneCount = await page.locator('[data-scene]').count();
-if (takeaways < sceneCount) fail(`${sceneCount} scenes but only ${takeaways} takeaways`);
-else pass(`${sceneCount} scenes, each with a standalone text takeaway`);
+const contentScenes = await page.locator('[data-scene]:not([data-decorative])').count();
+const decorative = await page.locator('[data-scene][data-decorative]').count();
+if (takeaways < contentScenes) {
+  fail(`${contentScenes} content scenes but only ${takeaways} takeaways`);
+} else {
+  pass(`${contentScenes} content scenes each with a takeaway (+${decorative} decorative)`);
+}
 
 if (await page.locator('a[href*="preview"]').count()) fail('the dev harness is linked from the piece');
 else pass('no developer surface linked from the piece');

@@ -54,7 +54,8 @@ export function mountRecurrenceScene(root: HTMLElement): () => void {
   const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');
   const prompt = root.querySelector<HTMLElement>('[data-prompt]');
   const readout = root.querySelector<HTMLElement>('[data-readout]');
-  if (!canvas || !prompt || !readout) {
+  const pick = root.querySelector<HTMLButtonElement>('[data-pick]');
+  if (!canvas || !prompt || !readout || !pick) {
     throw new Error('recurrence scene: missing required elements');
   }
 
@@ -135,6 +136,29 @@ export function mountRecurrenceScene(root: HTMLElement): () => void {
       : 'none in view';
   };
 
+  /** Select the patch around tile `seed` and find where else it occurs. */
+  const choose = (seed: number) => {
+    const order = pieces
+      .map((_, i) => i)
+      .sort(
+        (a, b) =>
+          Math.hypot(centres[a]!.x - centres[seed]!.x, centres[a]!.y - centres[seed]!.y) -
+          Math.hypot(centres[b]!.x - centres[seed]!.x, centres[b]!.y - centres[seed]!.y),
+      );
+    selection = order.slice(0, PATCH);
+    found = recurrences(pieces, selection, MAX_MARKS);
+    draw();
+  };
+
+  // Keyboard and screen-reader route to what tapping does: walk the tiling a
+  // patch at a time. The scene's point must not be pointer-only.
+  let cursor = Math.floor(pieces.length / 2);
+  const onPick = () => {
+    cursor = (cursor + 137) % pieces.length;
+    choose(cursor);
+  };
+  pick.addEventListener('click', onPick);
+
   renderer.onTap = (world) => {
     // Nearest tile to the tap, then its neighbours: a patch, not a pixel.
     let best = -1;
@@ -147,17 +171,8 @@ export function mountRecurrenceScene(root: HTMLElement): () => void {
       }
     }
     if (best < 0) return;
-
-    const order = pieces
-      .map((_, i) => i)
-      .sort(
-        (a, b) =>
-          Math.hypot(centres[a]!.x - centres[best]!.x, centres[a]!.y - centres[best]!.y) -
-          Math.hypot(centres[b]!.x - centres[best]!.x, centres[b]!.y - centres[best]!.y),
-      );
-    selection = order.slice(0, PATCH);
-    found = recurrences(pieces, selection, MAX_MARKS);
-    draw();
+    cursor = best;
+    choose(best);
   };
 
   const onTheme = () => {
@@ -179,6 +194,7 @@ export function mountRecurrenceScene(root: HTMLElement): () => void {
   draw();
 
   return () => {
+    pick.removeEventListener('click', onPick);
     media.removeEventListener('change', onTheme);
     renderer.destroy();
   };

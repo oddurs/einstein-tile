@@ -75,7 +75,8 @@ export function mountRepeatScene(root: HTMLElement): () => void {
   const bar = root.querySelector<HTMLElement>('[data-bar]');
   const next = root.querySelector<HTMLButtonElement>('[data-next]');
   const reset = root.querySelector<HTMLButtonElement>('[data-reset]');
-  if (!canvas || !title || !prompt || !meter || !bar || !next || !reset) {
+  const nudge = root.querySelector<HTMLButtonElement>('[data-nudge]');
+  if (!canvas || !title || !prompt || !meter || !bar || !next || !reset || !nudge) {
     throw new Error('repeat scene: missing required elements');
   }
 
@@ -254,6 +255,19 @@ export function mountRepeatScene(root: HTMLElement): () => void {
     draw();
   };
 
+  // A keyboard and screen-reader route to the same thing dragging does: step
+  // through the candidate slides one at a time. Without it the scene's entire
+  // argument is reachable only by pointer.
+  let cursor = 0;
+  const onNudge = () => {
+    if (!candidates.length) return;
+    cursor = (cursor + 1) % candidates.length;
+    shift = candidates[cursor]!;
+    raw = { x: toX(shift), y: toY(shift) };
+    tried.add(`${shift.a},${shift.b}`);
+    draw();
+  };
+
   const onNext = () => loadAct('hats');
   const onReset = () => {
     if (act === 'hats') {
@@ -277,6 +291,7 @@ export function mountRepeatScene(root: HTMLElement): () => void {
   };
 
   next.addEventListener('click', onNext);
+  nudge.addEventListener('click', onNudge);
   reset.addEventListener('click', onReset);
   media.addEventListener('change', onTheme);
 
@@ -284,6 +299,7 @@ export function mountRepeatScene(root: HTMLElement): () => void {
 
   return () => {
     next.removeEventListener('click', onNext);
+    nudge.removeEventListener('click', onNudge);
     reset.removeEventListener('click', onReset);
     media.removeEventListener('change', onTheme);
     renderer.destroy();

@@ -1,6 +1,7 @@
 ---
 // The piece. One page, scenes as sections. See docs/10-sprint-02.md.
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const site = `https://oddurs.github.io${base}/`;
 ---
 
 <!doctype html>
@@ -14,12 +15,28 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       name="description"
       content="One ordinary-looking shape can cover an infinite floor, and the pattern can never repeat. Here is why it can't."
     />
-    <link rel="canonical" href={`https://oddurs.github.io${base}/`} />
+    <link rel="canonical" href={site} />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="A shape that never repeats" />
+    <meta
+      property="og:description"
+      content="One tile covers an endless floor and the pattern never repeats. Slide it, search it, zoom out — and see why it can't."
+    />
+    <meta property="og:url" content={site} />
+    <meta property="og:image" content={`${site}og.png`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="A patch of the einstein tiling, coloured by its nested clusters."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
 
   <body>
     <article>
-      <header class="lede" data-scene="hook">
+      <header class="lede" data-scene="hook" data-decorative>
         <figure class="hero" aria-hidden="true">
           <canvas data-canvas></canvas>
         </figure>
@@ -52,13 +69,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </div>
 
         <figure class="stage">
-          <canvas data-canvas aria-describedby="alt-hat"></canvas>
+          <canvas
+            data-canvas
+            tabindex="0"
+            role="img"
+            aria-label="The hat, built from eight kites cut out of three hexagons."
+            aria-describedby="alt-hat"
+          ></canvas>
           <figcaption class="hud">
-            <p data-caption class="hud-prompt"></p>
+            <p data-caption class="hud-prompt" role="status" aria-live="polite"></p>
             <div class="hud-row slider-row">
               <label for="step-2" class="visually-hidden">construction step</label>
               <input id="step-2" data-step type="range" />
-              <span data-readout class="meter"></span>
+              <span data-readout class="meter" aria-live="polite"></span>
             </div>
           </figcaption>
         </figure>
@@ -88,16 +111,23 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </div>
 
         <figure class="stage">
-          <canvas data-canvas aria-describedby="alt-repeat"></canvas>
+          <canvas
+            data-canvas
+            tabindex="0"
+            role="img"
+            aria-label="A tiling with a movable copy of itself laid over it. Drag to slide the copy; tiles that land exactly on a tile are highlighted."
+            aria-describedby="alt-repeat"
+          ></canvas>
           <figcaption class="hud">
             <h3 data-title class="hud-title"></h3>
-            <p data-prompt class="hud-prompt"></p>
+            <p data-prompt class="hud-prompt" role="status" aria-live="polite"></p>
             <div class="gauge">
               <div class="track"><div data-bar class="bar"></div></div>
-              <span data-meter class="meter"></span>
+              <span data-meter class="meter" aria-live="polite"></span>
             </div>
             <div class="hud-row">
               <button data-next type="button" hidden></button>
+              <button data-nudge type="button">Try another slide</button>
               <button data-reset type="button">Show me the best there is</button>
             </div>
           </figcaption>
@@ -125,13 +155,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </div>
 
         <figure class="stage">
-          <canvas data-canvas aria-describedby="alt-recur"></canvas>
+          <canvas
+            data-canvas
+            tabindex="0"
+            role="img"
+            aria-label="A patch of the tiling. Select a group of tiles to highlight every other place the same group occurs."
+            aria-describedby="alt-recur"
+          ></canvas>
           <figcaption class="hud">
-            <p data-prompt class="hud-prompt"></p>
-            <p class="hint">
-              Tap the tiling to pick a patch.
-              <span data-readout class="meter"></span>
-            </p>
+            <p data-prompt class="hud-prompt" role="status" aria-live="polite"></p>
+            <div class="hud-row">
+              <button data-pick type="button">Pick a patch</button>
+              <span data-readout class="meter" aria-live="polite"></span>
+            </div>
           </figcaption>
         </figure>
 
@@ -155,9 +191,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </div>
 
         <figure class="stage">
-          <canvas data-canvas aria-describedby="alt-hierarchy"></canvas>
+          <canvas
+            data-canvas
+            tabindex="0"
+            role="img"
+            aria-label="The tiling, coloured by which cluster each tile belongs to at the current grouping level."
+            aria-describedby="alt-hierarchy"
+          ></canvas>
           <figcaption class="hud">
-            <p data-caption class="hud-prompt"></p>
+            <p data-caption class="hud-prompt" role="status" aria-live="polite"></p>
             <div class="hud-row slider-row">
               <span aria-hidden="true" class="end">tiles</span>
               <label for="stage-5" class="visually-hidden">grouping level</label>
@@ -361,6 +403,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         border-radius: 16px;
         overflow: hidden;
         background: var(--bg);
+      }
+
+      .stage canvas:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -3px;
       }
 
       .stage canvas {
