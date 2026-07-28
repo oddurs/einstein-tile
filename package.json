@@ -14,7 +14,8 @@
     "smoke": "astro build && node scripts/smoke.mjs",
     "og": "vite-node scripts/og.mjs",
     "verify": "npm run typecheck && npm test && npm run smoke",
-    "smoke:webkit": "astro build && node scripts/smoke.mjs --engine=webkit"
+    "smoke:webkit": "astro build && node scripts/smoke.mjs --engine=webkit",
+    "shots": "astro build && vite-node scripts/shots.mjs"
   },
   "dependencies": {
     "astro": "^7.1.4"

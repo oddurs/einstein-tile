@@ -1,4 +1,5 @@
 ---
+import { rootCSS } from '../renderer/tokens.js';
 // The piece. One page, scenes as sections. See docs/10-sprint-02.md.
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const site = `https://oddurs.github.io${base}/`;
@@ -337,32 +338,9 @@ const site = `https://oddurs.github.io${base}/`;
       });
     </script>
 
+    <style is:global set:html={rootCSS()}></style>
+
     <style is:global>
-      /* Surfaces match palette.ts SURFACE — every contrast and CVD number in
-         the palette was computed against exactly these. */
-      :root {
-        --bg: #fcfcfb;
-        --fg: #1a1a19;
-        --muted: #62615e; /* fallback: color-mix is Safari 16.4+ */
-        --muted: color-mix(in oklab, #1a1a19 62%, #fcfcfb);
-        --panel: rgba(252, 252, 251, 0.92);
-        --line: rgba(26, 26, 25, 0.14);
-        --accent: #3eb4f1;
-        --good: #1f9d55;
-        --measure: 34rem;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #1a1a19;
-          --fg: #f0efec;
-          --muted: #a6a5a1; /* fallback: color-mix is Safari 16.4+ */
-          --muted: color-mix(in oklab, #f0efec 66%, #1a1a19);
-          --panel: rgba(26, 26, 25, 0.92);
-          --line: rgba(240, 239, 236, 0.16);
-          --accent: #0e97d2;
-          --good: #35b26a;
-        }
-      }
 
       * { box-sizing: border-box; }
 

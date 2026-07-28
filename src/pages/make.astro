@@ -1,4 +1,5 @@
 ---
+import { rootCSS } from '../renderer/tokens.js';
 // The sandbox. Deliberately a separate place from the piece — see
 // docs/15-sprint-06.md on why the narrative page stays untouched.
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -95,25 +96,9 @@ const site = `https://oddurs.github.io${base}/`;
       </style>
     </noscript>
 
+    <style is:global set:html={rootCSS()}></style>
+
     <style is:global>
-      :root {
-        --bg: #fcfcfb;
-        --fg: #1a1a19;
-        --muted: #62615e;
-        --muted: color-mix(in oklab, #1a1a19 62%, #fcfcfb);
-        --line: rgba(26, 26, 25, 0.14);
-        --accent: #3eb4f1;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #1a1a19;
-          --fg: #f0efec;
-          --muted: #a6a5a1;
-          --muted: color-mix(in oklab, #f0efec 66%, #1a1a19);
-          --line: rgba(240, 239, 236, 0.16);
-          --accent: #0e97d2;
-        }
-      }
 
       * { box-sizing: border-box; }
 
