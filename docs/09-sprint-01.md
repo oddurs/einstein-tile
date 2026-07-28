@@ -148,7 +148,47 @@ Android.
 
 ---
 
-### A3. Palette + theming — **M**
+### A3. Palette + theming — **M** — ✅ done
+
+Values were **computed and validated**, not chosen — via the `dataviz` skill's
+Machado–Oliveira–Fernandes severity-1.0 validator. `test/palette.test.ts` (32
+tests) re-runs the same gates in CI, so a well-meant hex tweak that breaks
+colour-vision safety fails the build rather than shipping.
+
+A tiling is an **all-pairs** problem — any tile can neighbour any other — so
+these face the strict gate, not the adjacent-only one charts use. Two findings
+came out of that:
+
+**1. Four hues at constant lightness cannot be made CVD-safe.** Of the reference
+palette's 70 four-colour subsets, 2 passed all-pairs in both modes, both stuck
+in the 6–8 warn band. A wider OKLCH sweep at fixed lightness found *nothing* at
+ΔE ≥ 8. This is structural: CVD collapses the red–green axis, leaving roughly
+one chromatic axis. The fix is to stop leaning on hue — **CVD preserves
+lightness**. Varying lightness across the four slots reached ΔE 14.7 light /
+9.0 dark. (Harmony fights this: requiring hues ≥ 65° apart *and* ΔE ≥ 10 has no
+solution at all.)
+
+**2. Twelve orientations cannot be twelve hues** — no categorical palette
+supports twelve. But 12 = 6 rotations × 2 chiralities, so the accessible scheme
+encodes the *factors*: rotation as a 6-step lightness ramp (ordinal, and
+lightness survives CVD), chirality as blue vs ochre (the blue–yellow axis is the
+one CVD leaves intact). Cross-family separation ΔE ≈ 19 at every rotation pair.
+
+Rotation is **ordinal**, not categorical, so its ramp takes the ordinal gate
+(monotone lightness, adjacent ΔL ≥ 0.06, end-step contrast ≥ 2:1) rather than
+all-pairs ΔE. Applying the categorical gate to it was my own error, caught by
+running the validator instead of reasoning about it.
+
+The `vivid` orientation wheel is kept as a **non-default** option: beautiful,
+honestly cyclic, and worst-pair ΔE 1.1. A test pins that it fails, so the two
+modes can't silently converge. The toggle changes *only* the orientation scheme
+— the other two are already safe — which is honesty over the appearance of
+consistency.
+
+Page surfaces now match `palette.ts` `SURFACE` exactly, since every published
+number was computed against them.
+
+*Original ticket text:*
 
 The three colour schemes from [06 §5](06-webapp-design.md) — by orientation, by
 metatile, by reflection — plus light/dark from day one.

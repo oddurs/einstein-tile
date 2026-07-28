@@ -8,6 +8,7 @@
 
 import { buildPatch, type ColourScheme, type Patch } from '../engine/index.js';
 import { TileRenderer } from './renderer.js';
+import type { ColourMode } from './palette.js';
 
 const SCHEMES: ColourScheme[] = ['orientation', 'metatile', 'reflection'];
 
@@ -17,14 +18,17 @@ export function mountPreview(root: HTMLElement): () => void {
   const schemeSelect = root.querySelector<HTMLSelectElement>('[data-scheme]');
   const fitButton = root.querySelector<HTMLButtonElement>('[data-fit]');
   const readout = root.querySelector<HTMLElement>('[data-readout]');
-  if (!canvas || !levelInput || !schemeSelect || !fitButton || !readout) {
+  const vividToggle = root.querySelector<HTMLInputElement>('[data-vivid]');
+  if (!canvas || !levelInput || !schemeSelect || !fitButton || !readout || !vividToggle) {
     throw new Error('preview: missing required elements');
   }
 
   const media = window.matchMedia('(prefers-color-scheme: dark)');
+  const mode = (): ColourMode => (vividToggle.checked ? 'vivid' : 'accessible');
   const renderer = new TileRenderer(canvas, {
     scheme: 'orientation',
     dark: media.matches,
+    mode: mode(),
   });
 
   const cache = new Map<number, Patch>();
@@ -49,11 +53,13 @@ export function mountPreview(root: HTMLElement): () => void {
   const onScheme = () => renderer.setScheme(schemeSelect.value as ColourScheme);
   const onFit = () => renderer.fit();
   const onTheme = (e: MediaQueryListEvent) => renderer.setDark(e.matches);
+  const onMode = () => renderer.setMode(mode());
 
   levelInput.addEventListener('input', onLevel);
   schemeSelect.addEventListener('change', onScheme);
   fitButton.addEventListener('click', onFit);
   media.addEventListener('change', onTheme);
+  vividToggle.addEventListener('change', onMode);
 
   schemeSelect.replaceChildren(
     ...SCHEMES.map((s) => {
@@ -71,6 +77,7 @@ export function mountPreview(root: HTMLElement): () => void {
     schemeSelect.removeEventListener('change', onScheme);
     fitButton.removeEventListener('click', onFit);
     media.removeEventListener('change', onTheme);
+    vividToggle.removeEventListener('change', onMode);
     renderer.destroy();
   };
 }

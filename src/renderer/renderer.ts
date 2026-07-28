@@ -17,7 +17,12 @@
 import type { ColourScheme, Patch } from '../engine/index.js';
 import { polygon } from '../engine/index.js';
 import { attachGestures } from './gestures.js';
-import { makePalette, tileColourKey, type Palette } from './palette.js';
+import {
+  makePalette,
+  tileColourKey,
+  type ColourMode,
+  type Palette,
+} from './palette.js';
 import {
   type Bounds,
   type View,
@@ -32,6 +37,8 @@ export type { View } from './view.js';
 export interface RendererOptions {
   scheme?: ColourScheme;
   dark?: boolean;
+  /** `accessible` is colour-vision-safe throughout; `vivid` is not. */
+  mode?: ColourMode;
   /** Fraction of the smaller viewport dimension left as margin by `fit()`. */
   padding?: number;
   onTap?(world: { x: number; y: number }): void;
@@ -56,6 +63,7 @@ export class TileRenderer {
 
   private scheme: ColourScheme;
   private dark: boolean;
+  private mode: ColourMode;
   private palette: Palette;
   private padding: number;
   private onTap: RendererOptions['onTap'];
@@ -75,9 +83,10 @@ export class TileRenderer {
     this.ctx = ctx;
     this.scheme = opts.scheme ?? 'orientation';
     this.dark = opts.dark ?? false;
+    this.mode = opts.mode ?? 'accessible';
     this.padding = opts.padding ?? 0.06;
     this.onTap = opts.onTap;
-    this.palette = makePalette(this.scheme, this.dark);
+    this.palette = this.buildPalette();
 
     // Required for passive pointer listeners — see gestures.ts.
     canvas.style.touchAction = 'none';
@@ -111,17 +120,24 @@ export class TileRenderer {
   setScheme(scheme: ColourScheme): void {
     if (scheme === this.scheme) return;
     this.scheme = scheme;
-    this.palette = makePalette(scheme, this.dark);
-    this.rebuild();
-    this.requestDraw();
+    this.recolour();
   }
 
   setDark(dark: boolean): void {
     if (dark === this.dark) return;
     this.dark = dark;
-    this.palette = makePalette(this.scheme, dark);
-    this.rebuild();
-    this.requestDraw();
+    this.recolour();
+  }
+
+  setMode(mode: ColourMode): void {
+    if (mode === this.mode) return;
+    this.mode = mode;
+    this.recolour();
+  }
+
+  /** The current background, so a host page can match its chrome to the canvas. */
+  get background(): string {
+    return this.palette.background;
   }
 
   /** Scale and centre so the whole patch is visible. */
@@ -154,6 +170,16 @@ export class TileRenderer {
   }
 
   // -- internals -----------------------------------------------------------
+
+  private buildPalette(): Palette {
+    return makePalette(this.scheme, { dark: this.dark, mode: this.mode });
+  }
+
+  private recolour(): void {
+    this.palette = this.buildPalette();
+    this.rebuild();
+    this.requestDraw();
+  }
 
   private syncSize(): void {
     const rect = this.canvas.getBoundingClientRect();

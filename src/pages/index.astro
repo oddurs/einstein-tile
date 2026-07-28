@@ -28,6 +28,14 @@ const title = 'einstein tile — renderer preview';
           <select id="scheme" data-scheme></select>
           <span data-readout class="readout"></span>
         </div>
+        <div class="row">
+          <label for="vivid">vivid</label>
+          <input id="vivid" data-vivid type="checkbox" />
+          <span class="note">
+            off = colour-vision-safe. Only affects <em>orientation</em>; the other
+            two schemes are safe either way.
+          </span>
+        </div>
       </div>
     </main>
 
@@ -38,18 +46,21 @@ const title = 'einstein tile — renderer preview';
     </script>
 
     <style>
+      /* Surfaces match palette.ts SURFACE exactly — the palette's CVD and
+         contrast numbers were computed against these, so the page chrome must
+         not drift from them. */
       :root {
-        --bg: #faf9f6;
-        --fg: #1e1c1a;
-        --panel: rgba(255, 255, 255, 0.82);
-        --line: rgba(30, 28, 26, 0.16);
+        --bg: #fcfcfb;
+        --fg: #1a1a19;
+        --panel: rgba(252, 252, 251, 0.85);
+        --line: rgba(26, 26, 25, 0.16);
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #12131a;
-          --fg: #e9e7e3;
-          --panel: rgba(22, 23, 32, 0.82);
-          --line: rgba(233, 231, 227, 0.16);
+          --bg: #1a1a19;
+          --fg: #f0efec;
+          --panel: rgba(26, 26, 25, 0.85);
+          --line: rgba(240, 239, 236, 0.18);
         }
       }
 
@@ -124,6 +135,20 @@ const title = 'einstein tile — renderer preview';
         font-variant-numeric: tabular-nums;
         font-size: 13px;
         opacity: 0.6;
+      }
+
+      .note {
+        font-size: 12px;
+        line-height: 1.35;
+        opacity: 0.6;
+      }
+
+      input[type='checkbox'] {
+        width: 22px;
+        height: 22px;
+        margin: 0;
+        /* the 44px touch floor is met by padding the row, not the box itself */
+        flex: 0 0 auto;
       }
     </style>
   </body>
