@@ -52,6 +52,7 @@ export {
   alignment,
   bestAlignment,
   candidateShifts,
+  recurrences,
 } from './alignment.js';
 
 export { hexOutline, hexPatch } from './hexgrid.js';

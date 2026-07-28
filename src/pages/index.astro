@@ -93,6 +93,35 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </p>
       </section>
 
+      <!-- Scene 4 — order is not randomness -->
+      <section class="scene" data-scene="recurrence" aria-labelledby="h-recur">
+        <div class="prose">
+          <h2 id="h-recur">But it isn’t random</h2>
+          <p>
+            “Never repeats” sounds like chaos, and it is easy to conclude the
+            tiling is just a mess. It is the opposite. Point at any patch of it.
+          </p>
+        </div>
+
+        <figure class="stage">
+          <canvas data-canvas aria-describedby="alt-recur"></canvas>
+          <figcaption class="hud">
+            <p data-prompt class="hud-prompt"></p>
+            <p class="hint">
+              Tap the tiling to pick a patch.
+              <span data-readout class="meter"></span>
+            </p>
+          </figcaption>
+        </figure>
+
+        <p id="alt-recur" class="takeaway">
+          Any patch you can point at occurs again elsewhere — typically dozens of
+          times within view, and infinitely often on an endless floor. The tiling
+          is highly ordered. What it lacks is a single slide that carries the
+          whole of it onto itself.
+        </p>
+      </section>
+
       <!-- Scene 5 — the hierarchy -->
       <section class="scene" data-scene="hierarchy" aria-labelledby="h-hierarchy">
         <div class="prose">
@@ -148,11 +177,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       import { mountScenes } from '../scenes/stage.js';
       import { mountHatScene } from '../scenes/thehat.js';
       import { mountRepeatScene } from '../scenes/repeat.js';
+      import { mountRecurrenceScene } from '../scenes/recurrence.js';
       import { mountHierarchyScene } from '../scenes/hierarchy.js';
 
       mountScenes({
         hat: mountHatScene,
         repeat: mountRepeatScene,
+        recurrence: mountRecurrenceScene,
         hierarchy: mountHierarchyScene,
       });
     </script>

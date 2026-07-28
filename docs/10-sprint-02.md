@@ -92,7 +92,26 @@ polykite enumeration, no coordinates on screen.
 
 ---
 
-### N3. Scene 4 — order ≠ repetition — **M**
+### N3. Scene 4 — order ≠ repetition — **M** — ✅ done
+
+`src/scenes/recurrence.ts` + `recurrences()` in the engine. Tap the tiling; the
+scene takes that tile and its six neighbours and highlights **every** other
+place that exact patch occurs — about twenty, in view.
+
+Completeness comes from the same argument as `candidateShifts`: the patch's
+first piece must land on a piece of its own form, so this finds every
+recurrence rather than a sample.
+
+**Sized down deliberately.** A level-4 patch gives ~120 recurrences, which
+sounds better and teaches worse — each copy is a few pixels and reads as a
+speck, so the reader cannot see that they are *the same shape*, which is the
+entire mechanism. Level 3 gives ~20 copies, each legible.
+
+The honesty line: what is shown is recurrence inside one finite patch. That it
+continues forever is a claim about the infinite tiling, so the copy says so
+rather than implying the visible count is the whole story.
+
+*Original ticket text:*
 
 *One sentence: it never repeats, but it isn't random either.*
 

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { alignment, bestAlignment, candidateShifts } from '../src/engine/alignment.js';
+import {
+  alignment,
+  bestAlignment,
+  candidateShifts,
+  recurrences,
+} from '../src/engine/alignment.js';
 import { eis } from '../src/engine/eisenstein.js';
 import { hexPatch } from '../src/engine/hexgrid.js';
 import { buildPatch } from '../src/engine/patch.js';
@@ -120,5 +125,63 @@ describe('alignment scoring', () => {
     expect(result.count).toBe(0);
     expect(result.fraction).toBe(0);
     expect(result.perfect).toBe(false);
+  });
+});
+
+describe('patches recur even though the whole tiling never does', () => {
+  const pieces = hats(3);
+  const nearest = (seed: number, count: number): number[] => {
+    const centre = (p: Piece) => {
+      let x = 0;
+      let y = 0;
+      for (const q of p.points) { x += q.x; y += q.y; }
+      return { x: x / p.points.length, y: y / p.points.length };
+    };
+    const cs = pieces.map(centre);
+    return pieces
+      .map((_, i) => i)
+      .sort(
+        (a, b) =>
+          Math.hypot(cs[a]!.x - cs[seed]!.x, cs[a]!.y - cs[seed]!.y) -
+          Math.hypot(cs[b]!.x - cs[seed]!.x, cs[b]!.y - cs[seed]!.y),
+      )
+      .slice(0, count);
+  };
+
+  it('finds a small patch again, many times over', () => {
+    // The misconception-killer: "never repeats" does not mean random.
+    expect(recurrences(pieces, nearest(500, 7)).length).toBeGreaterThan(5);
+  });
+
+  it('really does place the whole patch, not just its first tile', () => {
+    const selection = nearest(500, 7);
+    const present = new Set(
+      pieces.map((p) => `${p.form}@${p.anchor.a},${p.anchor.b}`),
+    );
+    for (const shift of recurrences(pieces, selection, 8)) {
+      for (const i of selection) {
+        const p = pieces[i]!;
+        const key = `${p.form}@${p.anchor.a + shift.a},${p.anchor.b + shift.b}`;
+        expect(present.has(key), `piece ${i} under shift ${shift.a},${shift.b}`).toBe(true);
+      }
+    }
+  });
+
+  it('never claims the identity as a recurrence', () => {
+    for (const s of recurrences(pieces, nearest(500, 5))) {
+      expect(s.a === 0 && s.b === 0).toBe(false);
+    }
+  });
+
+  it('recurs less often the bigger the patch — order, not periodicity', () => {
+    // If patches recurred equally at every size, the tiling *would* be
+    // periodic. Rarity growing with size is the signature of the real thing.
+    const small = recurrences(pieces, nearest(500, 3), 500).length;
+    const large = recurrences(pieces, nearest(500, 24), 500).length;
+    expect(large).toBeLessThanOrEqual(small);
+  });
+
+  it('returns nothing for an empty selection', () => {
+    expect(recurrences(pieces, [])).toEqual([]);
   });
 });

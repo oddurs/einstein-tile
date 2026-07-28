@@ -104,6 +104,52 @@ export function candidateShifts(pieces: readonly Piece[]): Eis[] {
 }
 
 /**
+ * Where else does this exact group of pieces appear?
+ *
+ * The counterpart to `alignment`, and the answer to a reader who has just
+ * watched no slide align the whole tiling and concluded it must be random.
+ *
+ * A *selection* recurs at shift `s` when every piece in it lands on a piece of
+ * the same form — which is `alignment` restricted to a subset. The whole tiling
+ * never manages this; small patches manage it constantly. Both facts are true,
+ * and holding them together is the point: the tiling is highly ordered, it
+ * simply has no global period.
+ *
+ * Candidate shifts come from the same completeness argument as `candidateShifts`
+ * — the selection's first piece must land on a piece of its own form — so this
+ * finds every recurrence, not a sample.
+ */
+export function recurrences(
+  pieces: readonly Piece[],
+  selection: readonly number[],
+  limit = 24,
+): Eis[] {
+  const anchor = selection[0] === undefined ? undefined : pieces[selection[0]];
+  if (!anchor) return [];
+
+  const present = new Set(pieces.map(pieceKey));
+  const chosen = selection.map((i) => pieces[i]!).filter(Boolean);
+  const found: Eis[] = [];
+
+  for (const piece of pieces) {
+    if (piece.form !== anchor.form) continue;
+    const shift = {
+      a: piece.anchor.a - anchor.anchor.a,
+      b: piece.anchor.b - anchor.anchor.b,
+    };
+    if (shift.a === 0 && shift.b === 0) continue;
+    const everyPieceLands = chosen.every((p) =>
+      present.has(pieceKey({ anchor: add(p.anchor, shift), form: p.form })),
+    );
+    if (everyPieceLands) {
+      found.push(shift);
+      if (found.length >= limit) break;
+    }
+  }
+  return found;
+}
+
+/**
  * The best slide within `radius` lattice steps, ignoring the zero slide.
  *
  * For a periodic tiling this finds a perfect match. For an aperiodic one it
