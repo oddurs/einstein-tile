@@ -58,6 +58,16 @@ export {
 export { hexOutline, hexPatch } from './hexgrid.js';
 
 export {
+  type DeformedTile,
+  EDGES,
+  LONG,
+  OUTLINE_14,
+  SHORT,
+  deform,
+  tileOutline,
+} from './continuum.js';
+
+export {
   type Board,
   deadHoles,
   frontier,

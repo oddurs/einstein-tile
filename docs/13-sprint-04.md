@@ -48,7 +48,23 @@ than a change to `patch.ts`. The exactness boundary stays where it is.
 
 ## Tickets
 
-### D1. The deformation — **L**
+### D1. The deformation — **L** — ✅ done
+
+`src/engine/continuum.ts`. The 14-edge outline is derived by reinstating the
+straight vertex, and a patch is deformed by breadth-first walk over shared
+lattice vertices.
+
+**The test that matters is not area — it is agreement.** Congruent tiles prove
+nothing about whether the tiling survived; two tiles disagreeing about where a
+shared vertex went would mean a torn gap or a forced overlap. Measured across
+six members of the family including near-degenerate ones: **1,222 shared-vertex
+incidences, worst disagreement 1.1e-14.** That is also the empirical form of the
+path-independence argument — the walk's route cannot change the answer.
+
+Deforming to the hat's own parameters reproduces the exact engine's geometry to
+nine decimal places, which is the other end of the check.
+
+*Original ticket text:*
 
 Given a patch and a parameter, produce deformed vertex positions.
 
@@ -67,7 +83,18 @@ turtle, and no gaps or overlaps appear anywhere along the slider.
 
 ---
 
-### D2. Scene 7 — the continuum — **M**
+### D2. Scene 7 — the continuum — **M** — ✅ done
+
+`src/scenes/continuum.ts`. One slider, hat to turtle. **120fps while dragging
+at a 4× CPU throttle** — the deformation is cheap enough to run per frame.
+
+Two decisions protect the point rather than the pixels. The view fits **once**
+and never again, because re-fitting per frame would make the tiling appear to
+swim rather than deform in place. And colours are keyed to orientation and
+computed once, so a tile keeps its colour throughout — which is what lets a
+reader see that the *arrangement* is unchanged while the *shape* moves.
+
+*Original ticket text:*
 
 One slider. The tiling re-flows continuously from hat to turtle. Nothing else on
 screen — no second control, no numbers.
@@ -85,7 +112,11 @@ turtle are both reachable and recognisable.
 
 ---
 
-### D3. Copy and placement — **S**
+### D3. Copy and placement — **S** — ✅ done
+
+After the hierarchy, before the outro. 698 words total now, still ~3 minutes.
+
+*Original ticket text:*
 
 Goes after the hierarchy, before the outro — an escalation, not a coda. Roughly:
 *you have been looking at one shape; it is one of infinitely many, and the whole
@@ -95,7 +126,13 @@ Plus a text takeaway that stands alone, as every scene has.
 
 ---
 
-### D4. Hold the line — **S**
+### D4. Hold the line — **S** — ✅ done
+
+Seven viewports clean with five stages, no-JS degradation intact, four new smoke
+assertions, 32 KB of JavaScript against a 120 KB ceiling, keyboard route via the
+slider, accessible name on the canvas.
+
+*Original ticket text:*
 
 Everything sprint 3 established, applied to the new scene: viewport sweep
 including landscape, no-JS degradation, budgets, accessible name and a keyboard

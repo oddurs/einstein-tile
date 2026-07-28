@@ -7,11 +7,11 @@ Everything below is accurate as of sprint 3.
 
 | | How |
 | --- | --- |
-| Engine correctness | 131 unit tests — exact lattice arithmetic, isometries, hulls, kites, legal moves, alignment, palette colour-vision gates |
+| Engine correctness | 142 unit tests — exact lattice arithmetic, isometries, hulls, kites, legal moves, alignment, palette colour-vision gates |
 | The page renders | Browser smoke check: canvases backed at devicePixelRatio, not blank, drawn in many colours |
 | The scenes teach what they claim | Hexagon floor clicks into alignment; hat tiling never does; the conclusion appears; the hierarchy redraws as it coarsens |
 | Accessibility basics | Every control has an accessible name; one `h1`; `lang` set; every content scene has a standalone text takeaway |
-| Degradation | With JavaScript off, no empty figures remain and 597 words of prose survive |
+| Degradation | With JavaScript off, no empty figures remain and 698 words of prose survive |
 | Budgets | First contentful paint, total JavaScript ≤ 120 KB |
 
 The smoke check runs in CI as of sprint 3. Before that it only ever ran locally,

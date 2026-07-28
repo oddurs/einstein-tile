@@ -279,6 +279,43 @@ else pass(`last caption: "${lastCaption.slice(0, 44)}…"`);
 if (Buffer.compare(beforePix, afterPix) === 0) fail('the grouping did not redraw');
 else pass('changing stage redraws the grouping');
 
+// ── scene 7: the continuum ─────────────────────────────────────────────────
+console.log('\nscene "continuum" — behaviour:');
+const cont = page.locator('[data-scene="continuum"]');
+await cont.scrollIntoViewIfNeeded();
+await page.waitForTimeout(700);
+
+const morph = cont.locator('[data-morph]');
+const setMorph = async (v) => {
+  await morph.evaluate((el, x) => {
+    el.value = String(x);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }, v);
+  await page.waitForTimeout(220);
+};
+const readoutOf = () => cont.locator('[data-readout]').textContent().then((t) => t.trim());
+
+await setMorph(0);
+if ((await readoutOf()) !== 'the hat') fail(`expected to start on the hat, got "${await readoutOf()}"`);
+else pass('starts on the hat');
+
+const atHat = await cont.locator('canvas').screenshot();
+await setMorph(1000);
+if ((await readoutOf()) !== 'the turtle') fail(`expected the turtle at the far end, got "${await readoutOf()}"`);
+else pass('reaches the turtle');
+
+const atTurtle = await cont.locator('canvas').screenshot();
+if (Buffer.compare(atHat, atTurtle) === 0) fail('the tiling did not change across the family');
+else pass('the tile deforms across the family');
+
+// The view must not re-fit mid-drag: the tiling should deform in place rather
+// than appear to swim, or the scene says the wrong thing.
+await setMorph(500);
+const mid = await cont.locator('canvas').screenshot();
+if (Buffer.compare(mid, atHat) === 0 || Buffer.compare(mid, atTurtle) === 0) {
+  fail('the midpoint is identical to an end — the slider is not continuous');
+} else pass('intermediate shapes exist between the two named ones');
+
 // ── budgets ────────────────────────────────────────────────────────────────
 // Deliberately not Lighthouse. A score is hard to act on and the tool is heavy
 // and flaky in CI; these are the specific things that would actually hurt a

@@ -236,6 +236,50 @@ const site = `https://oddurs.github.io${base}/`;
         </p>
       </section>
 
+      <!-- Scene 7 — the continuum -->
+      <section class="scene" data-scene="continuum" aria-labelledby="h-continuum">
+        <div class="prose">
+          <h2 id="h-continuum">And it isn’t even one shape</h2>
+          <p>
+            Here is the part that still seems unreasonable. The hat is not a
+            special polygon that happens to work. It is one point on a
+            continuous family of shapes — and the whole family works, the same
+            way, for the same reason.
+          </p>
+          <p>Stretch it.</p>
+        </div>
+
+        <figure class="stage">
+          <canvas
+            data-canvas
+            role="img"
+            aria-label="A tiling whose tile stretches continuously from the hat to a longer shape called the turtle, without the arrangement changing."
+            aria-describedby="alt-continuum"
+          ></canvas>
+          <figcaption class="hud">
+            <p data-caption class="hud-prompt" role="status" aria-live="polite"></p>
+            <div class="hud-row slider-row">
+              <span aria-hidden="true" class="end">hat</span>
+              <label for="morph" class="visually-hidden">shape</label>
+              <input id="morph" data-morph type="range" />
+              <span aria-hidden="true" class="end">turtle</span>
+            </div>
+            <p class="hint">
+              Drag to stretch the tile.
+              <span data-readout class="meter" aria-live="polite"></span>
+            </p>
+          </figcaption>
+        </figure>
+
+        <p id="alt-continuum" class="takeaway">
+          Every edge of the hat has one of two lengths. Change those two lengths
+          and you get a different shape — which tiles in exactly the same
+          arrangement, and just as unrepeatingly. The hat and the turtle are two
+          points on that family; there are infinitely many in between, and
+          almost all of them are einsteins too.
+        </p>
+      </section>
+
       <p class="no-js-note">
         The figures on this page are interactive and need JavaScript. Without it
         you get the argument in words, which is most of it.
@@ -276,6 +320,7 @@ const site = `https://oddurs.github.io${base}/`;
       import { mountHatScene } from '../scenes/thehat.js';
       import { mountRepeatScene } from '../scenes/repeat.js';
       import { mountRecurrenceScene } from '../scenes/recurrence.js';
+      import { mountContinuumScene } from '../scenes/continuum.js';
       import { mountHierarchyScene } from '../scenes/hierarchy.js';
 
       mountScenes({
@@ -284,6 +329,7 @@ const site = `https://oddurs.github.io${base}/`;
         repeat: mountRepeatScene,
         recurrence: mountRecurrenceScene,
         hierarchy: mountHierarchyScene,
+        continuum: mountContinuumScene,
       });
     </script>
 
