@@ -33,8 +33,10 @@ in parallel with the hard engine work that scene 3 needs.
 provenance and the arXiv reference are recorded in the commit message, not only
 in doc comments.
 
-Remote: **github.com/oddurs/einstein-tile**, private for now. Flip to public at
-launch — the direction that isn't reversible.
+Remote: **github.com/oddurs/einstein-tile**, public. Going public brought the
+BSD-3 obligation live, so `LICENSE` (MIT), `THIRD-PARTY-NOTICES.md` (the hatviz
+copyright notice, retained as the licence requires) and a root `README.md` are
+in place.
 
 Sprint tracking lives in this file, not Linear. The only Linear team is the Sava
 company workspace and this is a side project, so it stays out of there.
@@ -86,12 +88,10 @@ reach a dead end.
 Astro, TypeScript, one page, canvas island, static build, deploy on push from
 `oddurs/einstein-tile`. No CMS, no router, no backend ([07](07-scope.md)).
 
-Host is undecided. One constraint worth knowing early: **GitHub Pages does not
-serve private repos on a free account.** So either the repo goes public sooner
-than launch, or the host is Cloudflare Pages / Netlify / Vercel, all of which
-deploy a private repo's static output on their free tiers. Cloudflare Pages is
-the default pick — no bandwidth metering, which matters if this gets posted
-somewhere and spikes.
+The repo is public, so **GitHub Pages is now viable** and is the zero-setup
+option. Cloudflare Pages remains the better pick if this gets posted somewhere
+and spikes — Pages has a soft 100 GB/month bandwidth guideline, Cloudflare
+doesn't meter. Either works; decide at wiring time.
 
 **Done when:** a URL exists that someone can open on a phone.
 
