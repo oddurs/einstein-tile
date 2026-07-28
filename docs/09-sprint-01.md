@@ -27,11 +27,15 @@ in parallel with the hard engine work that scene 3 needs.
 
 ## Tickets
 
-### 0. Version control — **S**
-`git init`, initial commit, `main` branch. Record the hatviz provenance
-(BSD-3) in the commit history, not only in doc comments. Push to a remote.
+### 0. Version control — **S** — ✅ done
 
-*Blocks everything. Do it first.*
+`git init`, initial commit on `main` (`6197977`, 26 files). The hatviz BSD-3
+provenance and the arXiv reference are recorded in the commit message, not only
+in doc comments.
+
+*No remote yet* — creating a GitHub repo is a separate call, since it decides
+whether this is public. Sprint tracking lives in this file rather than Linear:
+the only Linear team is the Sava company workspace, and this is a side project.
 
 ---
 
