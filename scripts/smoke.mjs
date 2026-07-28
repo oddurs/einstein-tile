@@ -10,11 +10,19 @@
  * Browsers, once: npx playwright install chromium
  */
 
-import { chromium, devices } from 'playwright';
+import { chromium, webkit, firefox, devices } from 'playwright';
 import { createServer } from 'node:http';
 import { readFile, readdir, access } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { homedir } from 'node:os';
+
+/**
+ * Which engine to drive. WebKit is Safari's, and is the one that matters — the
+ * piece arrives by posted link and a large share of those taps are iPhones.
+ *   npm run smoke -- --engine=webkit
+ */
+const ENGINE = (process.argv.find((a) => a.startsWith('--engine=')) ?? '').slice(9) || 'chromium';
+const ENGINES = { chromium, webkit, firefox };
 
 const PORT = 4319;
 const BASE = '/einstein-tile';
@@ -66,11 +74,20 @@ const exists = (p) =>
  * bad trade for "does the canvas draw" — so fall back to any build already in
  * the cache. A one-revision skew does not affect what we assert here.
  */
-async function launchChromium() {
+async function launchBrowser() {
+  const engine = ENGINES[ENGINE];
+  if (!engine) throw new Error(`unknown engine "${ENGINE}" (chromium | webkit | firefox)`);
   try {
-    return await chromium.launch();
+    return await engine.launch();
   } catch (err) {
     if (!/Executable doesn't exist/.test(err.message)) throw err;
+    if (ENGINE !== 'chromium') {
+      console.error(
+        `\n${ENGINE} is not installed. Run:  npx playwright install ${ENGINE}\n` +
+          `Until then this engine is UNVERIFIED — see docs/11-sprint-03.md.`,
+      );
+      throw err;
+    }
 
     const cache = join(homedir(), 'Library/Caches/ms-playwright');
     const candidates = [];
@@ -99,8 +116,15 @@ async function launchChromium() {
 }
 
 const server = await serve();
-const browser = await launchChromium();
-const context = await browser.newContext({ ...devices['Pixel 7'] });
+const browser = await launchBrowser();
+// devices[] descriptors carry a Chrome user-agent; for other engines take just
+// the viewport so the engine reports itself honestly.
+const phone = devices['Pixel 7'];
+const context = await browser.newContext(
+  ENGINE === 'chromium'
+    ? { ...phone }
+    : { viewport: phone.viewport, deviceScaleFactor: phone.deviceScaleFactor, hasTouch: true, isMobile: true },
+);
 const page = await context.newPage();
 
 const problems = [];

@@ -273,6 +273,7 @@ const site = `https://oddurs.github.io${base}/`;
       :root {
         --bg: #fcfcfb;
         --fg: #1a1a19;
+        --muted: #62615e; /* fallback: color-mix is Safari 16.4+ */
         --muted: color-mix(in oklab, #1a1a19 62%, #fcfcfb);
         --panel: rgba(252, 252, 251, 0.92);
         --line: rgba(26, 26, 25, 0.14);
@@ -284,6 +285,7 @@ const site = `https://oddurs.github.io${base}/`;
         :root {
           --bg: #1a1a19;
           --fg: #f0efec;
+          --muted: #a6a5a1; /* fallback: color-mix is Safari 16.4+ */
           --muted: color-mix(in oklab, #f0efec 66%, #1a1a19);
           --panel: rgba(26, 26, 25, 0.92);
           --line: rgba(240, 239, 236, 0.16);
@@ -349,11 +351,21 @@ const site = `https://oddurs.github.io${base}/`;
            edges, and a linear one so it has faded out entirely before the
            standfirst begins. Texture behind body copy is the fastest way to
            make an editorial page look cheap and read badly. */
-        mask-image:
-          radial-gradient(110% 80% at 50% 25%, #000 25%, transparent 75%),
-          linear-gradient(#000 42%, transparent 72%);
-        mask-composite: intersect;
-        -webkit-mask-composite: source-in;
+        /* Declared plainly first, then enhanced. A single mask works
+           everywhere; the composited pair is nicer where it is supported. If
+           mask-composite silently fails the hook would render at full strength
+           over the standfirst, which is a cheap-looking failure rather than an
+           obviously broken one — so the simple version has to stand alone. */
+        -webkit-mask-image: linear-gradient(#000 42%, transparent 72%);
+        mask-image: linear-gradient(#000 42%, transparent 72%);
+      }
+      @supports (mask-composite: intersect) {
+        .hero {
+          mask-image:
+            radial-gradient(110% 80% at 50% 25%, #000 25%, transparent 75%),
+            linear-gradient(#000 42%, transparent 72%);
+          mask-composite: intersect;
+        }
       }
       @media (prefers-color-scheme: dark) {
         .hero { opacity: 0.4; }
@@ -490,6 +502,7 @@ const site = `https://oddurs.github.io${base}/`;
         flex: 1;
         height: 8px;
         border-radius: 999px;
+        background: rgba(128, 128, 128, 0.22); /* fallback */
         background: color-mix(in oklab, var(--fg) 12%, transparent);
         overflow: hidden;
       }

@@ -37,7 +37,24 @@ not feel is broken on someone's phone.
 
 ## Tickets
 
-### C1. Run the smoke check on WebKit and Firefox — **M**
+### C1. Run the smoke check on WebKit and Firefox — **M** — ◐ plumbing done, **findings blocked**
+
+The harness is parameterised: `npm run smoke -- --engine=webkit` (or `firefox`),
+and `npm run smoke:webkit`. Non-Chromium engines get a plain viewport rather
+than the `devices['Pixel 7']` descriptor, whose Chrome user-agent would make the
+engine misreport itself.
+
+**But WebKit will not install in this environment.** `npx playwright install
+webkit` exits 0 and downloads nothing — the same silent failure the Chromium
+download hit earlier in the project. So:
+
+> ⚠️ **The piece has never been run in WebKit. Safari is unverified.**
+
+The harness fails loudly rather than skipping, so this cannot be mistaken for a
+pass. Anyone with a working network should run `npx playwright install webkit &&
+npm run smoke:webkit` — it is the highest-value unrun check in the project.
+
+*Original ticket text:*
 
 Parameterise the harness by engine. WebKit is Safari's engine and is the one
 that matters; Firefox is cheap to add once the plumbing exists.
@@ -48,7 +65,28 @@ not want to guess at fallbacks for problems that may not exist.
 
 ---
 
-### C2. Fix what C1 finds — **M**
+### C2. Fix what C1 finds — **M** — ◐ defensive subset applied
+
+C1 could not produce findings, so this is deliberately limited to changes that
+are **correct practice regardless** of whether any specific browser needs them —
+declare the simple thing first, enhance after. That is not guessing at a
+problem; it is the ordering that should have been there anyway.
+
+- `color-mix()` — a static colour precedes each of the three uses.
+- `dvh` — `vh` precedes it.
+- The hook's mask — a single `mask-image` now stands alone and works everywhere,
+  with the composited pair moved behind `@supports (mask-composite: intersect)`.
+  This was the one flagged as most dangerous, because a silent failure there
+  makes the page look *cheap* rather than *broken* and would never surface in an
+  error log.
+- `text-wrap: balance` — left as-is. It degrades to normal wrapping, which is
+  fine.
+
+What remains genuinely unverified is behaviour rather than styling:
+`setPointerCapture` in WebKit, and whether the drag gestures feel right under
+Safari's touch handling.
+
+*Original ticket text:*
 
 Fallbacks in the right order: a working plain declaration first, the enhanced
 one behind `@supports`. Never the reverse, which is how you ship a page that
