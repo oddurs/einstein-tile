@@ -252,7 +252,40 @@ success test.
 
 ---
 
-### S2. Scene 3 — try to break it — **L**
+### S2. Scene 3 — try to break it — **L** — ✅ done
+
+`src/scenes/placement.ts` + `/scene-3/`. Tap open space, the best-fitting legal
+hat drops in, and the other hats that would fit there stay on screen as ghosts
+you can tap to swap to. Undo, start over, live tile count. Colouring uses the
+reflection scheme so the mirrored hats are visible as you build.
+
+Three corrections came out of driving it in a real browser:
+
+- **Ghost-first didn't work.** The original design showed ghosts and required a
+  second tap to commit. Any tap that missed a ghost merely re-queried, so a
+  reader could tap 40 times and place two tiles. A tap now *acts*, and the
+  alternatives are offered afterwards.
+- **Taps must be forgiving.** Requiring the tap to land inside a candidate hat
+  meant most taps reported "nothing fits". A tap now falls back to the nearest
+  legal placements within a radius, and the frontier is drawn faintly so there
+  is something to aim at.
+- **Pocket avoidance is a tiebreak, not a filter.** Measured: pure random play
+  walls itself into an unfillable pocket after a median of **6 tiles**, which
+  reads as "hats are fiddly" rather than as anything lawful. Always avoiding
+  pockets never traps at all in 80 moves, which deletes the phenomenon. So the
+  auto-pick prefers safe placements — 24 tiles from 40 taps — while
+  pocket-forming ones stay available as ghosts.
+
+⚠️ **The headline lesson is not fully delivered.** [07](07-scope.md) asks this
+scene for *"you try to make it repeat, you can't"*. What it currently delivers
+is the related but distinct *"fitting locally never promises you can carry
+on"*, shown by the unfillable pocket. Nothing yet lets a reader **check**
+whether their patch repeats, so the stated lesson rides on the prompt text
+rather than on the mechanic. That is the top follow-up, and it wants playtesting
+(X2) before it is built — the right mechanic depends on what readers actually
+try to do.
+
+*Original ticket text:*
 
 Tap an exposed edge → ghost tiles appear in every legal orientation → tap to
 commit. No free drag ([06 §4](06-webapp-design.md)). Includes the scroll gate:

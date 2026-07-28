@@ -217,6 +217,59 @@ const zoomedTo = (await caption.textContent())?.trim();
 if (zoomedTo === zoomedFrom) fail('zooming out did not coarsen the grouping');
 else pass('zooming out coarsens the grouping');
 
+// ── scene 3 — try to break it ──────────────────────────────────────────────
+console.log('\nscene 3:');
+const place = await context.newPage();
+const placeProblems = [];
+place.on('console', (m) => m.type() === 'error' && placeProblems.push(`console: ${m.text()}`));
+place.on('pageerror', (e) => placeProblems.push(`uncaught: ${e.message}`));
+await place.goto(`http://localhost:${PORT}${BASE}/scene-3/`, { waitUntil: 'networkidle' });
+await place.waitForTimeout(500);
+
+if (placeProblems.length) placeProblems.forEach(fail);
+else pass('no console errors or uncaught exceptions');
+
+const countText = () => place.locator('[data-count]').textContent().then((t) => t.trim());
+const promptText = () => place.locator('[data-prompt]').textContent().then((t) => t.trim());
+
+if ((await countText()) !== '1 tile') fail(`expected to start with 1 tile, got ${await countText()}`);
+else pass('starts from a single hat');
+
+// tapping must place a tile on the very first try — an earlier build required a
+// second tap on a ghost, so taps could do nothing at all
+const pbox = await place.locator('canvas').boundingBox();
+const px = pbox.x + pbox.width / 2;
+const py = pbox.y + pbox.height / 2 - 80;
+await place.mouse.click(px + 55, py);
+await place.waitForTimeout(150);
+if ((await countText()) === '1 tile') fail('a tap next to the tile placed nothing');
+else pass(`one tap places a tile (${await countText()})`);
+
+// The reader must be able to build a real patch, not stall after a few tiles.
+// (That unfillable pockets are *reachable* is proved in test/moves.test.ts —
+// asserting it from random clicking here would be flaky, since the auto-pick
+// deliberately prefers placements that don't wall one off.)
+for (let i = 0; i < 40; i++) {
+  const ang = i * 2.399;
+  const r = 45 + (i % 9) * 12;
+  await place.mouse.click(px + Math.cos(ang) * r, py + Math.sin(ang) * r);
+  await place.waitForTimeout(40);
+}
+const built = Number.parseInt(await countText(), 10);
+if (!Number.isFinite(built) || built < 10) fail(`only reached ${await countText()} after 40 taps`);
+else pass(`play builds a real patch (${await countText()} after 40 taps)`);
+
+const beforeUndo = await countText();
+await place.locator('[data-undo]').click();
+await place.waitForTimeout(120);
+if ((await countText()) === beforeUndo) fail('undo did not remove a tile');
+else pass('undo removes the last tile');
+
+await place.locator('[data-reset]').click();
+await place.waitForTimeout(150);
+if ((await countText()) !== '1 tile') fail('start over did not reset the board');
+else pass('start over resets to a single hat');
+
 await browser.close();
 server.close();
 

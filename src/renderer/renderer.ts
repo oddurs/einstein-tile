@@ -134,6 +134,11 @@ export class TileRenderer {
     else this.requestDraw();
   }
 
+  /** Render a bare tile list — for boards that are built up rather than derived. */
+  setTiles(tiles: readonly Tile[], refit = false): void {
+    this.setPatch({ level: 0, root: 'H', tiles, metatiles: [] }, refit);
+  }
+
   setScheme(scheme: ColourScheme): void {
     if (scheme === this.scheme) return;
     this.scheme = scheme;
