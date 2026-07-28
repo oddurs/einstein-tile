@@ -19,8 +19,10 @@ The name is a pun on German *ein Stein*, "one stone" — nothing to do with Albe
 | [06-webapp-design.md](06-webapp-design.md) | **Product plan** — pedagogy, narrative arc, mobile UX, visual direction, stack |
 | [07-scope.md](07-scope.md) | **Scope** — the one sentence, depth ceilings, what we refuse and why |
 | [08-engine.md](08-engine.md) | **Engine** — exact-arithmetic design, verified properties, perf, gotchas |
+| [09-sprint-01.md](09-sprint-01.md) | Sprint 1 — the two load-bearing scenes, onto a phone |
+| [10-sprint-02.md](10-sprint-02.md) | Sprint 2 — turn working scenes into a piece you can read |
+| [11-sprint-03.md](11-sprint-03.md) | Sprint 3 — survives contact: viewports, degradation, CI |
 | [12-verification.md](12-verification.md) | **What is verified and what isn't** — read before trusting green CI |
-| [09-sprint-01.md](09-sprint-01.md) | **Sprint 1** — get scenes 3 and 5 onto a phone, and playtest them |
 | [references.md](references.md) | Annotated bibliography with links |
 
 ## The 60-second version
