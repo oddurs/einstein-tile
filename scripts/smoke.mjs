@@ -161,6 +161,62 @@ const scrolled = await page.evaluate(() => window.scrollY);
 if (scrolled !== 0) fail(`page scrolled to ${scrolled} during drag — touch-action is not applied`);
 else pass('page did not scroll during drag');
 
+// ── scene 5 — the hierarchy ────────────────────────────────────────────────
+console.log('\nscene 5:');
+const scene = await context.newPage();
+const sceneProblems = [];
+scene.on('console', (m) => m.type() === 'error' && sceneProblems.push(`console: ${m.text()}`));
+scene.on('pageerror', (e) => sceneProblems.push(`uncaught: ${e.message}`));
+await scene.goto(`http://localhost:${PORT}${BASE}/scene-5/`, { waitUntil: 'networkidle' });
+await scene.waitForTimeout(600);
+
+if (sceneProblems.length) sceneProblems.forEach(fail);
+else pass('no console errors or uncaught exceptions');
+
+const sceneColours = await scene.evaluate(() => {
+  const c = document.querySelector('canvas');
+  const { data } = c.getContext('2d').getImageData(0, 0, c.width, c.height);
+  const seen = new Set();
+  for (let i = 0; i < data.length; i += 4 * 97) seen.add((data[i] << 16) | (data[i+1] << 8) | data[i+2]);
+  return seen.size;
+});
+if (sceneColours < 3) fail(`scene 5 canvas shows only ${sceneColours} colours — probably blank`);
+else pass(`renders (${sceneColours} distinct colours sampled)`);
+
+// the caption is the teaching; it must exist and must change with the stage
+const slider = scene.locator('[data-stage]');
+const caption = scene.locator('[data-caption]');
+const first = (await caption.textContent())?.trim() ?? '';
+if (!first) fail('caption is empty at stage 0');
+else pass(`stage 0 caption present: "${first.slice(0, 48)}…"`);
+
+const beforePixels = await scene.locator('canvas').screenshot();
+await slider.evaluate((el) => {
+  el.value = el.max;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+});
+await scene.waitForTimeout(250);
+const last = (await caption.textContent())?.trim() ?? '';
+const afterPixels = await scene.locator('canvas').screenshot();
+
+if (last === first) fail('caption did not change between the first and last stage');
+else pass(`final caption differs: "${last.slice(0, 48)}…"`);
+if (Buffer.compare(beforePixels, afterPixels) === 0) fail('grouping did not change the canvas');
+else pass('changing stage redraws the grouping');
+
+// zoom must drive the stage too — that is the whole interaction
+await slider.evaluate((el) => { el.value = '0'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+await scene.waitForTimeout(150);
+const box2 = await scene.locator('canvas').boundingBox();
+await scene.mouse.move(box2.x + box2.width / 2, box2.y + box2.height / 2);
+await scene.mouse.down(); await scene.mouse.up();          // hand control back to zoom
+const zoomedFrom = (await caption.textContent())?.trim();
+for (let i = 0; i < 12; i++) await scene.mouse.wheel(0, 240);   // zoom out
+await scene.waitForTimeout(300);
+const zoomedTo = (await caption.textContent())?.trim();
+if (zoomedTo === zoomedFrom) fail('zooming out did not coarsen the grouping');
+else pass('zooming out coarsens the grouping');
+
 await browser.close();
 server.close();
 

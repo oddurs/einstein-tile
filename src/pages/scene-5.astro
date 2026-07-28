@@ -1,0 +1,158 @@
+---
+// Scene 5 — the hierarchy. Sprint ticket S1, docs/09.
+const title = 'Why it can never repeat';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{title}</title>
+    <meta
+      name="description"
+      content="Zoom out and watch an aperiodic tiling group itself into bigger copies of itself, forever."
+    />
+  </head>
+  <body>
+    <main data-hierarchy>
+      <canvas data-canvas></canvas>
+
+      <div class="hud">
+        <p data-caption class="caption"></p>
+        <div class="row">
+          <label for="stage" class="visually-hidden">grouping level</label>
+          <span aria-hidden="true" class="end">tiles</span>
+          <input id="stage" data-stage type="range" />
+          <span aria-hidden="true" class="end">whole</span>
+        </div>
+        <p class="hint">
+          Pinch or scroll to zoom — the grouping follows.
+          <span data-readout class="readout"></span>
+        </p>
+      </div>
+    </main>
+
+    <script>
+      import { mountHierarchyScene } from '../scenes/hierarchy.js';
+      const root = document.querySelector<HTMLElement>('[data-hierarchy]');
+      if (root) mountHierarchyScene(root);
+    </script>
+
+    <style>
+      /* Surfaces match palette.ts SURFACE — the palette's contrast and CVD
+         numbers were computed against exactly these. */
+      :root {
+        --bg: #fcfcfb;
+        --fg: #1a1a19;
+        --panel: rgba(252, 252, 251, 0.9);
+        --line: rgba(26, 26, 25, 0.16);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1a1a19;
+          --fg: #f0efec;
+          --panel: rgba(26, 26, 25, 0.9);
+          --line: rgba(240, 239, 236, 0.18);
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        /* dvh, not vh: mobile address bars resize the viewport mid-scroll. */
+        height: 100dvh;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font: 400 16px/1.5 ui-serif, Georgia, 'Times New Roman', serif;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      main { position: relative; height: 100%; }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+
+      .hud {
+        position: absolute;
+        left: max(14px, env(safe-area-inset-left));
+        right: max(14px, env(safe-area-inset-right));
+        bottom: max(14px, env(safe-area-inset-bottom));
+        padding: 16px 18px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--panel);
+        backdrop-filter: blur(14px);
+      }
+      @media (min-width: 720px) {
+        .hud { right: auto; max-width: 30rem; }
+      }
+
+      .caption {
+        margin: 0 0 14px;
+        font-size: clamp(17px, 4.2vw, 21px);
+        line-height: 1.35;
+        text-wrap: balance;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      input[type='range'] {
+        flex: 1;
+        min-width: 0;
+        min-height: 44px; /* touch target floor, docs/06 §4 */
+      }
+
+      .end {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.02em;
+        text-transform: lowercase;
+        opacity: 0.55;
+      }
+
+      .hint {
+        display: flex;
+        gap: 10px;
+        margin: 10px 0 0;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 12.5px;
+        opacity: 0.6;
+      }
+
+      .readout {
+        margin-left: auto;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      /* The reveal is stepwise and reader-driven, so there is no animation to
+         suppress — but keep transitions off for anyone who asked. */
+      @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; animation: none !important; }
+      }
+    </style>
+  </body>
+</html>

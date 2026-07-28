@@ -44,6 +44,8 @@ export {
   vertices,
 } from './patch.js';
 
+export { boundaryLoops, groupByAncestor, signedArea2 } from './hull.js';
+
 export {
   type ColourScheme,
   type Point,

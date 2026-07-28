@@ -29,10 +29,22 @@ export interface Tile {
   /** Exact placement. */
   readonly iso: Isometry;
   /**
-   * Metatile ancestry, outermost first. `path.length` equals the patch level,
-   * and `path[0]` is the root metatile. This is what scene 5 draws.
+   * Metatile ancestry as labels, outermost first. `path[0]` is the root
+   * metatile and `path.length` is `level + 1`. Use this to *colour* by
+   * metatile kind.
    */
   readonly path: readonly MetaLabel[];
+  /**
+   * Ancestry as child indices — `trail[i]` is which child was taken at depth
+   * `i`. The final entry is the hat's own index inside its metatile, so
+   * `trail.length` is `level + 1` and the deepest *metatile* grouping is
+   * `trail.length - 1`. The full trail uniquely identifies the tile.
+   *
+   * This is the tile's metatile **identity**, and `path` is not: sibling
+   * metatiles frequently share a label, so grouping on a label prefix silently
+   * merges distinct metatile instances into one. Group on a `trail` prefix.
+   */
+  readonly trail: readonly number[];
 }
 
 /** A metatile instance in the hierarchy. */
@@ -117,9 +129,20 @@ export function buildPatch(level: number, root: MetaLabel = 'H'): Patch {
   const metatiles: MetaInstance[] = [];
   const geom = inflate(level)[root];
 
-  const walk = (node: Geom, T: Affine, path: MetaLabel[], depth: number): void => {
+  const walk = (
+    node: Geom,
+    T: Affine,
+    path: MetaLabel[],
+    trail: number[],
+    depth: number,
+  ): void => {
     if (node.type === 'hat') {
-      tiles.push({ kind: node.kind, iso: isometryFromAffine(T), path: [...path] });
+      tiles.push({
+        kind: node.kind,
+        iso: isometryFromAffine(T),
+        path: [...path],
+        trail: [...trail],
+      });
       return;
     }
 
@@ -130,13 +153,15 @@ export function buildPatch(level: number, root: MetaLabel = 'H'): Patch {
     });
 
     path.push(node.label);
-    for (const ch of node.children) {
-      walk(ch.geom, mulAffine(T, ch.T), path, depth + 1);
-    }
+    node.children.forEach((ch, i) => {
+      trail.push(i);
+      walk(ch.geom, mulAffine(T, ch.T), path, trail, depth + 1);
+      trail.pop();
+    });
     path.pop();
   };
 
-  walk(geom, [1, 0, 0, 0, 1, 0], [], 0);
+  walk(geom, [1, 0, 0, 0, 1, 0], [], [], 0);
   return { level, root, tiles, metatiles };
 }
 

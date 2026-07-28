@@ -14,7 +14,7 @@
  * nothing in the narrative scenes needs it.
  */
 
-import type { ColourScheme, Patch } from '../engine/index.js';
+import type { ColourScheme, Patch, Tile } from '../engine/index.js';
 import { polygon } from '../engine/index.js';
 import { attachGestures } from './gestures.js';
 import {
@@ -49,6 +49,17 @@ interface Bucket {
   fill: string;
 }
 
+/** An outline drawn over the tiles — group hulls, highlights, ghosts. */
+export interface Overlay {
+  /** Closed loops in world coordinates. */
+  readonly loops: readonly (readonly { x: number; y: number }[])[];
+  readonly stroke?: string;
+  /** CSS pixels, constant on screen. */
+  readonly width?: number;
+  readonly fill?: string;
+  readonly opacity?: number;
+}
+
 export class TileRenderer {
   private readonly canvas: HTMLCanvasElement;
   private readonly ctx: CanvasRenderingContext2D;
@@ -67,6 +78,12 @@ export class TileRenderer {
   private palette: Palette;
   private padding: number;
   private onTap: RendererOptions['onTap'];
+
+  /** Called after any pan or zoom, so scenes can react to the view. */
+  onViewChange: ((view: Readonly<View>) => void) | null = null;
+
+  private colourOverride: ((tile: Tile) => string) | null = null;
+  private overlays: { path: Path2D; spec: Overlay }[] = [];
 
   private view: View = { scale: 1, tx: 0, ty: 0 };
   private dpr = 1;
@@ -94,11 +111,11 @@ export class TileRenderer {
     this.detachGestures = attachGestures(canvas, {
       onPan: (dx, dy) => {
         this.view = pan(this.view, dx, dy);
-        this.requestDraw();
+        this.viewChanged();
       },
       onZoom: (factor, cx, cy) => {
         this.view = zoomAt(this.view, factor, cx, cy);
-        this.requestDraw();
+        this.viewChanged();
       },
       onTap: (x, y) => this.onTap?.(toWorld(this.view, x, y)),
     });
@@ -135,9 +152,45 @@ export class TileRenderer {
     this.recolour();
   }
 
+  /**
+   * Colour tiles with an arbitrary function instead of the current scheme.
+   *
+   * The returned string is both the colour and the bucket key, so tiles sharing
+   * a colour still merge into one path and the per-frame cost stays flat.
+   * Pass `null` to fall back to the scheme.
+   */
+  setColourOverride(fn: ((tile: Tile) => string) | null): void {
+    this.colourOverride = fn;
+    this.recolour();
+  }
+
+  /** Replace the overlay outlines drawn above the tiles. */
+  setOverlays(overlays: readonly Overlay[]): void {
+    this.overlays = overlays.map((spec) => {
+      const path = new Path2D();
+      for (const loop of spec.loops) {
+        if (loop.length < 2) continue;
+        const first = loop[0]!;
+        path.moveTo(first.x, first.y);
+        for (let i = 1; i < loop.length; i++) path.lineTo(loop[i]!.x, loop[i]!.y);
+        path.closePath();
+      }
+      return { path, spec };
+    });
+    this.requestDraw();
+  }
+
   /** The current background, so a host page can match its chrome to the canvas. */
   get background(): string {
     return this.palette.background;
+  }
+
+  /** Zoom to an absolute scale, keeping the viewport centre fixed. */
+  zoomTo(scale: number): void {
+    const factor = scale / this.view.scale;
+    if (!Number.isFinite(factor) || factor === 1) return;
+    this.view = zoomAt(this.view, factor, this.cssWidth / 2, this.cssHeight / 2);
+    this.requestDraw();
   }
 
   /** Scale and centre so the whole patch is visible. */
@@ -170,6 +223,11 @@ export class TileRenderer {
   }
 
   // -- internals -----------------------------------------------------------
+
+  private viewChanged(): void {
+    this.requestDraw();
+    this.onViewChange?.(this.getView());
+  }
 
   private buildPalette(): Palette {
     return makePalette(this.scheme, { dark: this.dark, mode: this.mode });
@@ -211,7 +269,9 @@ export class TileRenderer {
     let maxY = -Infinity;
 
     for (const tile of this.patch.tiles) {
-      const key = String(tileColourKey(tile, this.scheme));
+      const key = this.colourOverride
+        ? this.colourOverride(tile)
+        : String(tileColourKey(tile, this.scheme));
       let path = byKey.get(key);
       if (!path) {
         path = new Path2D();
@@ -243,7 +303,10 @@ export class TileRenderer {
     // Sorted so colour order is stable between rebuilds.
     this.buckets = [...byKey.entries()]
       .sort((a, b) => a[0].localeCompare(b[0], 'en', { numeric: true }))
-      .map(([key, path]) => ({ path, fill: this.palette.fill(numeric(key)) }));
+      .map(([key, path]) => ({
+        path,
+        fill: this.colourOverride ? key : this.palette.fill(numeric(key)),
+      }));
   }
 
   private draw(): void {
@@ -278,6 +341,20 @@ export class TileRenderer {
       ctx.fillStyle = bucket.fill;
       ctx.fill(bucket.path);
       if (strokeVisible) ctx.stroke(bucket.path);
+    }
+
+    for (const { path, spec } of this.overlays) {
+      ctx.globalAlpha = spec.opacity ?? 1;
+      if (spec.fill) {
+        ctx.fillStyle = spec.fill;
+        ctx.fill(path);
+      }
+      if (spec.stroke !== undefined) {
+        ctx.strokeStyle = spec.stroke;
+        ctx.lineWidth = (spec.width ?? 2) / view.scale;
+        ctx.stroke(path);
+      }
+      ctx.globalAlpha = 1;
     }
   }
 }

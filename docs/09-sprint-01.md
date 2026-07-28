@@ -202,7 +202,42 @@ protanopia/deuteranopia check.
 
 ---
 
-### S1. Scene 5 — the hierarchy — **M**
+### S1. Scene 5 — the hierarchy — **M** — ✅ done
+
+`src/scenes/hierarchy.ts` + `/scene-5/`. Five stages: bare tiles, then metatile
+groups coarsening one level at a time. Groups are drawn with **true hulls**, and
+zoom and the slider drive the *same* one-dimensional reveal.
+
+Three things changed during the build, all from looking at the output:
+
+- **True hulls turned out to be buildable now**, without waiting for E1's kite
+  decomposition. Because tiles sit on an exact lattice, a group's boundary is
+  just the directed edges appearing once instead of twice
+  (`src/engine/hull.ts`). Tinting alone did not read as *nesting*; outlines fixed
+  that, and nesting is the entire point of the scene.
+- **Stage 0 was an illegible grey blob.** At the fitted scale 7,921 tiles are two
+  pixels each, so "one shape, laid down over and over" showed no shape at all.
+  Stage 0 now starts several octaves zoomed in. Also why the slider now drives
+  zoom: otherwise scrubbing and pinching disagreed about where you were.
+- **Dropped the depth-0 stage.** The whole patch as one flat colour teaches
+  nothing, and it threw away the strongest frame — depth 1, where the
+  substitution rule itself becomes visible as 3 H + 1 T + 3 P + 3 F.
+
+Two bugs the tests caught, both worth remembering:
+
+- **`Tile.path` is not identity.** Sibling metatiles frequently share a label, so
+  grouping on a label prefix silently merged distinct instances — visible as a
+  "group" whose hull was several disjoint loops. Tiles now carry `trail`, the
+  child-index ancestry, and grouping keys on that.
+- **Hull area must be summed *signed*.** Outer loops wind counter-clockwise and
+  holes clockwise, so taking each loop's absolute area adds holes instead of
+  subtracting them.
+
+The hull also gives an **exact** replacement for the Monte Carlo coverage test:
+a group's hull area equals its tile count × hat area, to 6 decimal places, at
+every depth.
+
+*Original ticket text:*
 
 The load-bearing scene. Pinch to zoom out; metatile groupings tint in by ancestor
 depth, level 1, then 2, then 3. Scrubbable, with a stepped alternative for
