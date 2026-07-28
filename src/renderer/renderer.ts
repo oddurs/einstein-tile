@@ -14,7 +14,7 @@
  * nothing in the narrative scenes needs it.
  */
 
-import type { ColourScheme, Patch, Tile } from '../engine/index.js';
+import type { ColourScheme, Patch, Point, Tile } from '../engine/index.js';
 import { polygon } from '../engine/index.js';
 import { attachGestures } from './gestures.js';
 import {
@@ -83,6 +83,25 @@ export class TileRenderer {
   onViewChange: ((view: Readonly<View>) => void) | null = null;
 
   private colourOverride: ((tile: Tile) => string) | null = null;
+  /**
+   * Tile outlines, cached per patch.
+   *
+   * Recolouring re-buckets tiles but never moves them, and recomputing 7,921
+   * polygons costs ~8ms — ~33ms on a throttled phone, which showed up as a p95
+   * frame of 66ms when scene 5 crossed a stage boundary. Geometry is therefore
+   * computed once per patch and reused by every recolour.
+   */
+  private geometry: Point[][] = [];
+  /**
+   * Built buckets, keyed by a caller-supplied colouring token.
+   *
+   * Scene 5 cycles through five fixed colourings, so without this every stage
+   * change rebuilds ~7,900 Path2Ds. Callers that pass a token get O(1) switching
+   * after the first visit; callers that don't are unaffected.
+   */
+  private bucketCache = new Map<string, Bucket[]>();
+  private colourToken: string | null = null;
+  private readonly overlayCache = new WeakMap<Overlay, Path2D>();
   private overlays: { path: Path2D; spec: Overlay }[] = [];
 
   private view: View = { scale: 1, tx: 0, ty: 0 };
@@ -129,6 +148,8 @@ export class TileRenderer {
 
   setPatch(patch: Patch, refit = true): void {
     this.patch = patch;
+    this.geometry = patch.tiles.map((tile) => polygon(tile));
+    this.bucketCache.clear();
     this.rebuild();
     if (refit) this.fit();
     else this.requestDraw();
@@ -164,21 +185,41 @@ export class TileRenderer {
    * a colour still merge into one path and the per-frame cost stays flat.
    * Pass `null` to fall back to the scheme.
    */
-  setColourOverride(fn: ((tile: Tile) => string) | null): void {
+  setColourOverride(fn: ((tile: Tile) => string) | null, token?: string): void {
     this.colourOverride = fn;
+    this.colourToken = token ?? null;
+    if (token) {
+      const cached = this.bucketCache.get(token);
+      if (cached) {
+        this.buckets = cached;
+        this.requestDraw();
+        return;
+      }
+    }
     this.recolour();
   }
 
-  /** Replace the overlay outlines drawn above the tiles. */
+  /**
+   * Replace the overlay outlines drawn above the tiles.
+   *
+   * Built paths are cached by overlay identity, so a scene that hands back the
+   * same `Overlay` object pays nothing to redisplay it. Scene 5's finest stage
+   * has 442 hull loops, and rebuilding those on every stage change was the
+   * remaining frame spike once tile geometry was cached.
+   */
   setOverlays(overlays: readonly Overlay[]): void {
     this.overlays = overlays.map((spec) => {
-      const path = new Path2D();
-      for (const loop of spec.loops) {
-        if (loop.length < 2) continue;
-        const first = loop[0]!;
-        path.moveTo(first.x, first.y);
-        for (let i = 1; i < loop.length; i++) path.lineTo(loop[i]!.x, loop[i]!.y);
-        path.closePath();
+      let path = this.overlayCache.get(spec);
+      if (!path) {
+        path = new Path2D();
+        for (const loop of spec.loops) {
+          if (loop.length < 2) continue;
+          const first = loop[0]!;
+          path.moveTo(first.x, first.y);
+          for (let i = 1; i < loop.length; i++) path.lineTo(loop[i]!.x, loop[i]!.y);
+          path.closePath();
+        }
+        this.overlayCache.set(spec, path);
       }
       return { path, spec };
     });
@@ -240,6 +281,7 @@ export class TileRenderer {
 
   private recolour(): void {
     this.palette = this.buildPalette();
+    this.bucketCache.clear();
     this.rebuild();
     this.requestDraw();
   }
@@ -273,7 +315,7 @@ export class TileRenderer {
     let maxX = -Infinity;
     let maxY = -Infinity;
 
-    for (const tile of this.patch.tiles) {
+    for (const [i, tile] of this.patch.tiles.entries()) {
       const key = this.colourOverride
         ? this.colourOverride(tile)
         : String(tileColourKey(tile, this.scheme));
@@ -282,7 +324,7 @@ export class TileRenderer {
         path = new Path2D();
         byKey.set(key, path);
       }
-      const pts = polygon(tile);
+      const pts = this.geometry[i] ?? polygon(tile);
       const first = pts[0]!;
       path.moveTo(first.x, first.y);
       for (let i = 1; i < pts.length; i++) {
@@ -312,6 +354,7 @@ export class TileRenderer {
         path,
         fill: this.colourOverride ? key : this.palette.fill(numeric(key)),
       }));
+    if (this.colourToken) this.bucketCache.set(this.colourToken, this.buckets);
   }
 
   private draw(): void {

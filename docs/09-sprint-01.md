@@ -296,7 +296,42 @@ dead end feels like the tiling's fault rather than the interface's.
 
 ---
 
-### X1. Mobile + perf harness — **M**
+### X1. Mobile + perf harness — **M** — ◐ measured, one known limit
+
+Audited and **measured**, not asserted. Method: headless Chromium at a Pixel 7
+viewport with `Emulation.setCPUThrottlingRate: 4` standing in for a low-end
+Android, sampling `requestAnimationFrame` intervals during continuous
+interaction, three runs each.
+
+| | median | p95 | verdict |
+| --- | --- | --- | --- |
+| Scene 3, panning | 8.3 ms | 9.3 ms | 120 fps — comfortable |
+| Scene 5, panning | 16.6 ms | 59 ms | 60 fps median |
+| Scene 5, zooming | 17.5 ms | ~92 ms | 60 fps median, occasional dropped frame |
+
+Heap is flat: **0.0 MB** growth across 15 stage changes, so no leak.
+
+Verified rather than assumed: only `wheel` is a non-passive listener (deliberate
+— there is no CSS equivalent for suppressing page zoom); `vh` appears nowhere but
+in comments explaining why `dvh` is used instead.
+
+**Two real fixes came out of this.** Tile geometry is now computed once per patch
+rather than per recolour — 7,921 `polygon()` calls cost ~8 ms, ~33 ms throttled,
+and scene 5 was paying that on every stage change. Merged colour buckets and
+overlay paths are cached by token and by object identity respectively.
+
+⚠️ **Known limit.** Scene 5's zoom still shows ~92 ms frames at 4× throttle, and
+caching did not remove them — the cost is canvas *rasterisation*: filling ~7,900
+merged hat outlines and stroking up to 442 group hulls, every frame. It is not
+JS work, so it cannot be cached away at this level. Median stays at 60 fps and
+unthrottled hardware is unaffected. If real-device testing says it matters, the
+fix is the WebGL path [06 §6](06-webapp-design.md) already holds in reserve —
+deliberately not built on a synthetic measurement.
+
+**Not done:** testing on a real mid-range Android, and Lighthouse/FCP in CI.
+Both need a device or a hosted run rather than this harness.
+
+*Original ticket text:*
 
 Runs alongside everything else, not at the end.
 

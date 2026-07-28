@@ -104,7 +104,14 @@ export function mountHierarchyScene(
     if (i === current) return;
     current = i;
     const stage = stages[i]!;
-    renderer.setColourOverride((tile) => stage.colourOf.get(tile) ?? '#888');
+    // The token lets the renderer cache this stage's merged paths, so revisiting
+    // a stage costs nothing instead of rebuilding ~7,900 Path2Ds.
+    renderer.setColourOverride(
+      (tile) => stage.colourOf.get(tile) ?? '#888',
+      `${theme()}:${i}`,
+    );
+    // Passing the stage's own overlay object (not a copy) lets the renderer
+    // reuse its built path.
     renderer.setOverlays(stage.overlay.loops.length ? [stage.overlay] : []);
     caption.textContent = CAPTIONS[Math.min(i, CAPTIONS.length - 1)]!;
     readout.textContent =
