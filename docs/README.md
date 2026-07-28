@@ -22,6 +22,7 @@ The name is a pun on German *ein Stein*, "one stone" — nothing to do with Albe
 | [09-sprint-01.md](09-sprint-01.md) | Sprint 1 — the two load-bearing scenes, onto a phone |
 | [10-sprint-02.md](10-sprint-02.md) | Sprint 2 — turn working scenes into a piece you can read |
 | [11-sprint-03.md](11-sprint-03.md) | Sprint 3 — survives contact: viewports, degradation, CI |
+| [17-sprint-08.md](17-sprint-08.md) | Sprint 8 — LaTeX's craft, not its costume: typography |
 | [16-sprint-07.md](16-sprint-07.md) | Sprint 7 — make it hold by construction: the sweep |
 | [15-sprint-06.md](15-sprint-06.md) | Sprint 6 — something to take away: the sandbox, export, share links |
 | [14-sprint-05.md](14-sprint-05.md) | Sprint 5 — the cold read: fact audit and an overclaim caught |
