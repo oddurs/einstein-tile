@@ -290,7 +290,7 @@ const site = `https://oddurs.github.io${base}/`;
       <footer class="outro">
         <h2>Afterwards</h2>
         <p>
-          The shape is called <strong>the hat</strong>. David Smith found it in
+          The shape is called <em>the hat</em>. David Smith found it in
           November 2022, by hand, with card and scissors; he worked out what it
           meant with Joseph Samuel Myers, Craig S. Kaplan and Chaim
           Goodman-Strauss, and they published the proof four months later.
@@ -300,7 +300,7 @@ const site = `https://oddurs.github.io${base}/`;
           uses the shape together with its mirror image — about one tile in eight
           is flipped. Some people felt that made it two tiles rather than one. Two
           months later the same four authors settled the argument with a second
-          shape, the <strong>spectre</strong>, which needs no mirrors at all.
+          shape, the <em>spectre</em>, which needs no mirrors at all.
         </p>
         <p>
           What nobody has is a reason. There is no theory that says which shapes
@@ -338,7 +338,7 @@ const site = `https://oddurs.github.io${base}/`;
       });
     </script>
 
-    <style is:global set:html={rootCSS()}></style>
+    <style is:global set:html={rootCSS(base)}></style>
 
     <style is:global>
 
@@ -359,8 +359,23 @@ const site = `https://oddurs.github.io${base}/`;
         overflow-x: hidden;
         background: var(--bg);
         color: var(--fg);
-        font: 400 clamp(17px, 1.1vw + 15px, 19px)/1.6 ui-serif, Georgia,
-          'Times New Roman', serif;
+        font-family: var(--face);
+        /* Match the fallback's x-height to the webfont's so the swap does not
+           reflow the page under the reader. */
+        font-size-adjust: var(--face-adjust);
+        font-size: var(--type-body);
+        line-height: var(--leading-body);
+        /* Old-style figures in running prose: they have ascenders and
+           descenders, so they sit *in* the line rather than shouting from it.
+           Georgia happens to default to these — stating it means the choice
+           survives a change of typeface. */
+        font-variant-numeric: oldstyle-nums proportional-nums;
+        font-kerning: normal;
+        font-variant-ligatures: common-ligatures contextual;
+        /* Break paragraphs looking further ahead than the next line. The
+           browser is still greedy, but less so; TeX's whole-paragraph
+           optimisation is what this approximates. */
+        text-wrap: pretty;
         -webkit-text-size-adjust: 100%;
       }
 
@@ -374,6 +389,8 @@ const site = `https://oddurs.github.io${base}/`;
         max-width: var(--measure);
         margin-inline: auto;
       }
+      /* Short and set larger, so it can run wider without tiring the eye. */
+      .standfirst { max-width: var(--measure-lead); }
 
       .lede {
         position: relative;
@@ -425,7 +442,7 @@ const site = `https://oddurs.github.io${base}/`;
       .eyebrow {
         margin: 0 0 1.2rem;
         font-family: ui-sans-serif, system-ui, sans-serif;
-        font-size: 13px;
+        font-size: var(--type-fine);
         font-weight: 500;
         letter-spacing: 0.09em;
         text-transform: uppercase;
@@ -434,25 +451,26 @@ const site = `https://oddurs.github.io${base}/`;
 
       h1 {
         margin: 0 0 1.4rem;
-        font-size: clamp(2.4rem, 7vw, 4rem);
+        font-size: var(--type-display);
         font-weight: 400;
-        line-height: 1.05;
+        line-height: var(--leading-display);
         letter-spacing: -0.02em;
         text-wrap: balance;
+        font-variant-ligatures: common-ligatures discretionary-ligatures;
       }
 
       .standfirst {
         margin: 0;
-        font-size: 1.12em;
-        line-height: 1.55;
+        font-size: var(--type-lead);
+        line-height: var(--leading-lead);
         color: var(--muted);
       }
 
       h2 {
         margin: 0 0 0.8rem;
-        font-size: clamp(1.5rem, 3.6vw, 2rem);
+        font-size: var(--type-section);
         font-weight: 400;
-        line-height: 1.15;
+        line-height: var(--leading-section);
         letter-spacing: -0.01em;
         text-wrap: balance;
       }
@@ -529,9 +547,10 @@ const site = `https://oddurs.github.io${base}/`;
       }
 
       .hud-prompt {
+        max-width: var(--measure-caption);
         margin: 0 0 12px;
-        font-size: 1em;
-        line-height: 1.4;
+        font-size: var(--type-body);
+        line-height: var(--leading-lead);
         text-wrap: balance;
         min-height: 2.8em;
       }
@@ -565,8 +584,10 @@ const site = `https://oddurs.github.io${base}/`;
 
       .meter {
         font-family: ui-sans-serif, system-ui, sans-serif;
-        font-size: 12.5px;
-        font-variant-numeric: tabular-nums;
+        font-size: var(--type-fine);
+        /* Lining and tabular: these values change in place, and old-style or
+           proportional figures make them jump as the digits change. */
+        font-variant-numeric: tabular-nums lining-nums;
         color: var(--muted);
         white-space: nowrap;
       }
@@ -618,7 +639,11 @@ const site = `https://oddurs.github.io${base}/`;
         margin: 0;
         padding-left: 1rem;
         border-left: 2px solid var(--line);
-        font-size: 0.95em;
+        /* Body size, not small. This paragraph carries the scene's whole
+           argument and is the only thing a reader without JavaScript gets —
+           de-emphasise it with colour and the rule, never by shrinking it. */
+        font-size: var(--type-body);
+        line-height: var(--leading-body);
         color: var(--muted);
       }
 
@@ -639,7 +664,7 @@ const site = `https://oddurs.github.io${base}/`;
       .make-link a { text-decoration-thickness: 1px; }
 
       .outro { padding-top: 2rem; }
-      .fine { font-size: 0.85em; color: var(--muted); }
+      .fine { font-size: var(--type-small); color: var(--muted); }
       a { color: inherit; text-underline-offset: 3px; }
 
       .visually-hidden {

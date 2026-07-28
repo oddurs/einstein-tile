@@ -12,6 +12,7 @@
  */
 
 import { SURFACE } from './palette.js';
+import { typeCSS } from './type.js';
 
 export interface Tokens {
   readonly bg: string;
@@ -22,15 +23,6 @@ export interface Tokens {
   readonly panel: string;
   readonly accent: string;
   readonly good: string;
-  /**
-   * The reading measure.
-   *
-   * Not decoration: this went missing when the tokens were centralised in
-   * sprint 7 and nothing noticed, because the screenshot harness only shot a
-   * phone viewport where the column is already narrower than this. Desktop
-   * readers got 82 characters a line for a while.
-   */
-  readonly measure: string;
 }
 
 export const TOKENS: Record<'light' | 'dark', Tokens> = {
@@ -42,7 +34,6 @@ export const TOKENS: Record<'light' | 'dark', Tokens> = {
     panel: 'rgba(252, 252, 251, 0.92)',
     accent: '#3eb4f1',
     good: '#1f9d55',
-    measure: '34rem',
   },
   dark: {
     bg: SURFACE.dark,
@@ -52,7 +43,6 @@ export const TOKENS: Record<'light' | 'dark', Tokens> = {
     panel: 'rgba(26, 26, 25, 0.92)',
     accent: '#0e97d2',
     good: '#35b26a',
-    measure: '34rem',
   },
 };
 
@@ -66,11 +56,17 @@ const declare = (t: Tokens): string =>
     `--panel: ${t.panel};`,
     `--accent: ${t.accent};`,
     `--good: ${t.good};`,
-    `--measure: ${t.measure};`,
   ].join('\n    ');
 
-/** The `:root` block, ready to inline into a page's stylesheet. */
-export const rootCSS = (): string =>
+/**
+ * The `:root` block, ready to inline into a page's stylesheet.
+ *
+ * Colour and type are emitted together so a page has exactly one place to pull
+ * in, and cannot acquire one while forgetting the other — which is how
+ * `--measure` went missing in sprint 7.
+ */
+export const rootCSS = (base = ''): string =>
+  `${typeCSS(base)}\n  ` +
   `:root {\n    ${declare(TOKENS.light)}\n  }\n` +
   `  @media (prefers-color-scheme: dark) {\n` +
   `    :root {\n    ${declare(TOKENS.dark)}\n    }\n  }`;

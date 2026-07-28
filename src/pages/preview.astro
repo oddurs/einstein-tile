@@ -1,5 +1,6 @@
 ---
 import { rootCSS } from '../renderer/tokens.js';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 // Developer harness — NOT part of the piece. Lives at /preview/ and is
 // deliberately unlinked from the narrative page. See docs/10-sprint-02.md N1.
 const title = 'einstein tile — renderer preview';
@@ -55,7 +56,7 @@ const title = 'einstein tile — renderer preview';
       /* Surfaces match palette.ts SURFACE exactly — the palette's CVD and
          contrast numbers were computed against these, so the page chrome must
          not drift from them. */
-      <Fragment set:html={rootCSS()} />
+      <Fragment set:html={rootCSS(base)} />
 
       * { box-sizing: border-box; }
 

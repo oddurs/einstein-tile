@@ -15,7 +15,8 @@
     "og": "vite-node scripts/og.mjs",
     "verify": "bash scripts/verify.sh",
     "smoke:webkit": "astro build && node scripts/smoke.mjs --engine=webkit",
-    "shots": "astro build && vite-node scripts/shots.mjs"
+    "shots": "astro build && vite-node scripts/shots.mjs",
+    "type": "astro build && vite-node scripts/type.mjs"
   },
   "dependencies": {
     "astro": "^7.1.4"

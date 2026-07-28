@@ -102,6 +102,19 @@ The research came first and is kept separately from the product decisions.
 
 Sprint records are `docs/09`–`11` and `13`–`15`.
 
+## Typography
+
+Set in **STIX Two Text** — the family scientific publishers commissioned so text
+and mathematics could sit together — self-hosted as two 46 KB Latin subsets, with
+no bold: the piece needed emphasis twice, and that is what italic is for.
+
+The measure is stated in characters rather than pixels, because line length is a
+count of characters and a fixed width silently becomes a different count when the
+typeface changes. `npm run type` measures it, along with the *rag* — the spread
+of line lengths, which is the quantity TeX minimises. Both are reported at three
+widths, because a measure regression once slipped through a screenshot check that
+only looked at a phone.
+
 ## Credits
 
 The hat and the spectre were discovered and proved by **David Smith, Joseph

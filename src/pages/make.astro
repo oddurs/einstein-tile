@@ -96,7 +96,7 @@ const site = `https://oddurs.github.io${base}/`;
       </style>
     </noscript>
 
-    <style is:global set:html={rootCSS()}></style>
+    <style is:global set:html={rootCSS(base)}></style>
 
     <style is:global>
 
@@ -108,6 +108,7 @@ const site = `https://oddurs.github.io${base}/`;
         background: var(--bg);
         color: var(--fg);
         font: 400 16px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size-adjust: none;
         -webkit-text-size-adjust: 100%;
       }
 
@@ -132,7 +133,7 @@ const site = `https://oddurs.github.io${base}/`;
       .back:hover { color: var(--fg); }
       h1 {
         margin: 0;
-        font-family: ui-serif, Georgia, serif;
+        font-family: var(--face);
         font-size: 1.4rem;
         font-weight: 400;
       }

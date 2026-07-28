@@ -54,7 +54,37 @@ Measuring something I believed was fine is what turned it up.
 
 ## Tickets
 
-### Y1. A typeface in the lineage — **M**
+### Y1. A typeface in the lineage — **M** — ✅ done
+
+**STIX Two Text**, self-hosted, 46 KB in two Latin subsets.
+
+Chosen by looking at real sentences at real sizes — a specimen of all four
+candidates against Georgia — and then checked with numbers:
+
+| | x-height | `0` width |
+| --- | --- | --- |
+| Georgia (incumbent) | 0.4814em | 0.6138em |
+| **STIX Two Text** | 0.473em | 0.495em |
+| Newsreader | 0.512em | 0.600em |
+| Source Serif 4 | 0.452em | 0.470em |
+
+STIX is what scientific publishers commissioned so text and mathematics could
+be set together, which makes it the honest answer to "inspired by LaTeX". Its
+x-height lands within **2%** of Georgia's, so no size compensation was needed
+and the fallback swap barely moves.
+
+**Its `0` is 24% narrower than Georgia's** — which is the whole argument for Y2
+in one number. Had the measure still been `34rem`, this change would have
+silently widened every line by about a dozen characters. Because it is set in
+`ch`, the column narrowed and the line length stayed exactly where it was put.
+
+Cost: **FCP 20 ms**, unchanged, because `font-display: swap` never blocks.
+
+**No bold.** The piece used it twice, both times naming a thing for the first
+time — which is what italic is for, and what LaTeX's `\emph` does. Dropping the
+face saved 28 KB and improved the typography.
+
+*Original ticket text:*
 
 The system serif is doing nothing wrong and nothing for us. The candidates that
 matter are the ones academic publishing actually uses:
@@ -75,7 +105,15 @@ keep Georgia.** That is a real possible outcome.
 
 ---
 
-### Y2. A measure set in characters — **S**
+### Y2. A measure set in characters — **S** — ✅ done
+
+66ch body, 52ch lead, 58ch caption — hit exactly at tablet and desktop. Phone
+reads 44ch, up from 36, purely because the new face is narrower.
+
+The unit change is the point: line length is a count of characters, so a
+typeface change should move the *column width*, not the *line length*. It did.
+
+*Original ticket text:*
 
 Move from `34rem` to a `ch`-based measure, target ~66 for body text, and let
 each role state its own count: a standfirst can run wider, a caption narrower.
@@ -84,7 +122,18 @@ This is the single highest-value change on the page and costs nothing.
 
 ---
 
-### Y3. A scale with a reason — **S**
+### Y3. A scale with a reason — **S** — ✅ done
+
+Major third (1.25) from a fluid base, in `src/renderer/type.ts`. Seven unrelated
+`clamp()`s became one ratio and one span.
+
+Two departures, both stated in the source: the display size takes step **5**
+rather than 4, because a major third from body reaches only ~46px and the piece
+opens on a headline that has to carry a page. And the takeaway is set at **body
+size, not small** — it carries each scene's argument and is all a reader without
+JavaScript gets, so it is de-emphasised by colour and rule, never by shrinking.
+
+*Original ticket text:*
 
 Replace the unrelated `clamp()`s with one ratio and derive every size from it.
 Any ratio defensible in a sentence will do; that it is *stated* matters more
@@ -92,7 +141,17 @@ than which one.
 
 ---
 
-### Y4. Figures, and the rest of the OpenType work — **M**
+### Y4. Figures, and the rest of the OpenType work — **M** — ✅ done
+
+Old-style proportional figures in running prose; tabular lining figures in the
+readouts, which change value in place and must not jitter; ligatures and kerning
+on in text.
+
+Georgia happened to default to old-style figures, so this looked right before it
+was specified. Stating it is what makes it survive the typeface change — and
+STIX does *not* default to them.
+
+*Original ticket text:*
 
 The piece is full of numbers — 20,426, eight, thirteen, one in eight, 46%. They
 are currently whatever the font defaults to.
@@ -106,7 +165,33 @@ are currently whatever the font defaults to.
 
 ---
 
-### Y5. Break paragraphs like TeX — **M**
+### Y5. Break paragraphs like TeX — **M** — ◐ measured, and **not built**
+
+`text-wrap: pretty` is applied. The Knuth–Plass implementation is not, and the
+measurement is why.
+
+`scripts/type.mjs` reports **rag** — the standard deviation of line lengths as a
+percentage of the measure, which is precisely the quantity TeX minimises.
+Measured across the twelve prose paragraphs at desktop:
+
+| | mean rag |
+| --- | --- |
+| `text-wrap: pretty` | **2.48%** |
+| `text-wrap: auto` | 2.51% |
+
+The line breaks genuinely differ, so `pretty` is doing something — it is just
+worth 0.03 points. And the total spread is 2.5%, so a whole-paragraph optimiser
+is competing for a fraction of an already-tiny number.
+
+**Why TeX's advantage mostly evaporates here:** it is largest in *justified* text
+at *narrow* measures, where a bad break forces visibly ugly word spacing. This
+is ragged-right at 66 characters — the easy case, where greedy breaking is
+close to optimal already.
+
+A negative result, measured rather than assumed, and cheaper than the dynamic
+program would have been.
+
+*Original ticket text:*
 
 **The most distinctive thing about LaTeX output**, and the least known. Browsers
 break greedily, line by line; TeX minimises badness across the whole paragraph,
@@ -123,7 +208,18 @@ result**; a negative finding, measured, is a real outcome.
 
 ---
 
-### Y6. Hold the line — **S**
+### Y6. Hold the line — **S** — ✅ done
+
+`npm run type` reports measure, size, leading and rag at three widths, with
+`--strict` failing if prose leaves the 45–75ch band above phone size. Line
+length is now checked rather than remembered — which is the same lesson
+`--measure` taught by going missing.
+
+The token test also had to be relaxed: it asserted on `rootCSS()` exactly, and
+pages now pass a base path so the `@font-face` URLs resolve. It was matching a
+spelling rather than the call.
+
+*Original ticket text:*
 
 Everything sprint 3 and 7 established: viewports, no-JS, budgets, a11y, and the
 screenshot diff — which this time is *expected* to change, so the shots become a

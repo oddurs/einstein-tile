@@ -70,7 +70,10 @@ describe('no page hard-codes a surface', () => {
     const files = (await readdir(PAGES)).filter((f: string) => f.endsWith('.astro'));
     for (const file of files) {
       const source = await readFile(join(PAGES, file), 'utf8');
-      expect(source, `${file} should use rootCSS()`).toContain('rootCSS()');
+      // Match the call, not one spelling of it — pages pass the base path so
+      // the @font-face URLs resolve, and asserting on `rootCSS()` exactly made
+      // that a test failure rather than a change.
+      expect(source, `${file} should use rootCSS`).toMatch(/rootCSS\(/);
     }
   });
 });

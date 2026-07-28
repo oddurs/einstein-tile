@@ -56,6 +56,23 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
+## STIX Two Text — the SIL Open Font License
+
+The piece is set in **STIX Two Text**, self-hosted in `public/fonts/` as two
+Latin subsets (regular and italic, 46 KB together).
+
+STIX — Scientific and Technical Information eXchange — was commissioned by a
+consortium of scientific publishers (AIP, ACS, APS, AMS, IEEE, Elsevier) so that
+text and mathematics could be set in one family. Version 2 is by Tiro Typeworks.
+
+Licensed under the **SIL Open Font License 1.1**, which permits use, study,
+modification and redistribution, including bundling with a work such as this one.
+Two conditions bind us and are met: the font is not sold on its own, and it is
+not distributed under the reserved name with modifications — the files here are
+unmodified subsets served under the original name.
+
+Full licence: <https://github.com/stipub/stixfonts/blob/master/OFL.txt>
+
 ## Imagery and figures
 
 Figures and animations on Craig Kaplan's [hat](https://cs.uwaterloo.ca/~csk/hat/)
