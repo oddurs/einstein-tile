@@ -28,42 +28,41 @@
  */
 
 /**
- * The typeface.
+ * The typeface: **Computer Modern**, self-hosted, 21 KB.
  *
- * **STIX Two Text**, self-hosted. STIX is the Scientific and Technical
- * Information eXchange — the family commissioned by scientific publishers so
- * that text and mathematics could be set together, which makes it the honest
- * choice for a piece that takes its cue from LaTeX.
+ * Knuth drew it for TeX, and it is the reason a LaTeX document is recognisable
+ * across a room. That recognition *is* the brief here, and it is why the first
+ * attempt failed: STIX Two Text was the defensible choice — commissioned by
+ * scientific publishers, excellent on screen — and a reader looked at it and
+ * saw nothing had changed. Defensible is not the same as asked for.
  *
- * It was chosen by looking at real sentences at real sizes, and then checked:
+ * Shipped as CMU Serif (Computer Modern Unicode), subsetted from 392 KB to
+ * **21 KB** — less than half what STIX cost — by keeping only the characters
+ * this piece actually sets: Latin, curly quotes, dashes, and a handful of
+ * symbols.
  *
- * - **x-height 0.473em against Georgia's 0.4814** — within 2%, so no size
- *   compensation is needed and the swap from the fallback is nearly invisible.
- * - **Its `0` is 24% narrower than Georgia's**, which would have silently
- *   widened every line by a dozen characters had the measure still been set in
- *   `rem`. Because it is set in `ch`, the column simply narrows and the line
- *   length stays where it was put. That is the argument for `ch` in one number.
- *
- * Two faces only, regular and italic — 46 KB. There is no bold: the piece used
- * it twice, both times to name a thing for the first time, which is what italic
- * is for.
+ * The known cost is real: Computer Modern's hairlines were drawn for print at
+ * high resolution, and it is a lighter colour on screen than a face designed
+ * for it. Accepted deliberately. If it proves thin in use, Knuth's *Concrete*
+ * — the heavier cut he drew for *Concrete Mathematics* — is the same skeleton
+ * with more weight.
  */
-export const FACE_STACK = `'STIX Two Text', ui-serif, Georgia, 'Times New Roman', serif`;
+export const FACE_STACK = `'CMU Serif', ui-serif, Georgia, 'Times New Roman', serif`;
 
 /**
  * Normalise the fallback's x-height to the webfont's, so the swap does not
  * reflow. The number is STIX's measured x-height per em.
  */
-export const FACE_ADJUST = 0.473;
+export const FACE_ADJUST = 0.43;
 
 export const fontCSS = (base: string): string =>
-  ['regular:normal:400', 'italic:italic:400']
+  ['roman:normal:400', 'italic:italic:400']
     .map((spec) => {
       const [file, style, weight] = spec.split(':');
       return [
         '@font-face {',
-        `    font-family: 'STIX Two Text';`,
-        `    src: url('${base}/fonts/stix-${file}.woff2') format('woff2');`,
+        `    font-family: 'CMU Serif';`,
+        `    src: url('${base}/fonts/cmu-serif-${file}.woff2') format('woff2');`,
         `    font-style: ${style};`,
         `    font-weight: ${weight};`,
         // Show the fallback immediately and swap: the text is the content, and
@@ -75,11 +74,49 @@ export const fontCSS = (base: string): string =>
     })
     .join('\n  ');
 
+/**
+ * Correct Computer Modern's interword space for the web.
+ *
+ * This is the one thing about CM that reads as wrong on a web page, and it is
+ * not a flaw in the face — it is TeX's spacing model arriving without TeX.
+ * `cmr10` declares an interword space of **0.333em**, but it also declares
+ * 0.167em of stretch and **0.111em of shrink**, and TeX routinely spends that
+ * shrink while justifying. The nominal space is a starting point, not the
+ * space you actually see in a LaTeX document.
+ *
+ * A browser setting ragged-right never shrinks anything, so it renders the
+ * full 0.333em every time. Measured against the faces this replaced, as a
+ * ratio of space to x-height — which is what the eye judges, since a wide
+ * space beside a small x-height is what a river is made of:
+ *
+ * | | space | space ÷ x-height |
+ * | --- | --- | --- |
+ * | Georgia | 0.241em | 0.501 |
+ * | Times New Roman | 0.250em | 0.559 |
+ * | **CMU Serif, uncorrected** | 0.333em | **0.773** |
+ *
+ * Taking 0.09em back lands the space at 0.243em — a ratio of 0.564, within a
+ * percent of Times — and stays *inside* the 0.111em that cmr10 itself says is
+ * available. So this is not overriding Knuth; it is spending the shrink he
+ * budgeted, because the thing that would otherwise spend it is not here.
+ */
+export const FACE_WORD_SPACING = '-0.09em';
+
 /** Major third. Stated so it can be argued with. */
 export const RATIO = 1.25;
 
-/** Body size in rem at the small end and the large end of the viewport. */
-const BASE = { min: 1.0625, max: 1.1875 } as const;
+/**
+ * Body size in rem at the small end and the large end of the viewport.
+ *
+ * The large end is 1.25rem rather than 1.1875 because Computer Modern's
+ * x-height is **0.431em** against STIX's 0.473 — so at an identical specified
+ * size it renders about 9% smaller to the eye, and CM was drawn for 10pt on
+ * paper besides. Only the large end moves: on a phone the column is bounded by
+ * the viewport rather than by `--measure`, so growing the type there would buy
+ * optical size by spending characters per line, which is the wrong trade at
+ * the width that can least afford it.
+ */
+const BASE = { min: 1.0625, max: 1.25 } as const;
 
 const step = (n: number, at: number) => at * RATIO ** n;
 
@@ -130,6 +167,7 @@ export const typeCSS = (base = ''): string =>
     ':root {',
     `    --face: ${FACE_STACK};`,
     `    --face-adjust: ${FACE_ADJUST};`,
+    `    --face-word-spacing: ${FACE_WORD_SPACING};`,
     // Step 5, not 4. The piece opens on a headline that has to carry a page,
     // and a major third from body reaches only ~46px — restrained past the
     // point of being quiet. A scale need not use every rung.

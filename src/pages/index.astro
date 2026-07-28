@@ -370,6 +370,8 @@ const site = `https://oddurs.github.io${base}/`;
            Georgia happens to default to these — stating it means the choice
            survives a change of typeface. */
         font-variant-numeric: oldstyle-nums proportional-nums;
+        /* Spend the shrink TeX would have spent. See `FACE_WORD_SPACING`. */
+        word-spacing: var(--face-word-spacing);
         font-kerning: normal;
         font-variant-ligatures: common-ligatures contextual;
         /* Break paragraphs looking further ahead than the next line. The

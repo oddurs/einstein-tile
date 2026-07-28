@@ -104,9 +104,18 @@ Sprint records are `docs/09`–`11` and `13`–`15`.
 
 ## Typography
 
-Set in **STIX Two Text** — the family scientific publishers commissioned so text
-and mathematics could sit together — self-hosted as two 46 KB Latin subsets, with
-no bold: the piece needed emphasis twice, and that is what italic is for.
+Set in **Computer Modern** — Knuth's face for TeX, and the reason a LaTeX
+document is recognisable across a room — self-hosted as two Latin subsets, 21 KB
+together, with no bold: the piece needed emphasis twice, and that is what italic
+is for.
+
+One correction was needed to make it read naturally on a web page. `cmr10`
+declares an interword space of 0.333em, but it also declares **0.111em of
+shrink**, which TeX spends routinely while justifying; a browser setting
+ragged-right never spends it, so it renders the full 0.333em and the paragraph
+fills with rivers. Taking 0.09em back lands the space at 0.243em — the same
+space-to-x-height ratio as Times, and still inside what cmr10 itself says is
+available.
 
 The measure is stated in characters rather than pixels, because line length is a
 count of characters and a fixed width silently becomes a different count when the

@@ -166,7 +166,7 @@ for (const [label, width] of [
   await context.close();
 }
 
-const face = 'STIX Two Text';
+const face = 'CMU Serif (Computer Modern)';
 console.log(`\nface: ${face} · band ${MIN}–${MAX}ch · rag is line-length spread, lower is calmer`);
 
 await browser.close();

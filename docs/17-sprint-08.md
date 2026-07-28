@@ -54,7 +54,59 @@ Measuring something I believed was fine is what turned it up.
 
 ## Tickets
 
-### Y1. A typeface in the lineage — **M** — ✅ done
+### Y1. A typeface in the lineage — **M** — ✅ done, after being got wrong once
+
+**Computer Modern** (CMU Serif), self-hosted, **21 KB** in two Latin subsets.
+
+#### The first answer was defensible and still wrong
+
+Y1 originally shipped **STIX Two Text**, for the reasons recorded below: a face
+scientific publishers commissioned, sturdy on screen, x-height within 2% of
+Georgia's. The brief was "inspired by LaTeX", and STIX satisfies a reading of it.
+
+The reader looked at the result and said *I don't see anything having changed* —
+which was correct, and was the point. The face was deployed and serving; it just
+did not **look like LaTeX**, because looking like LaTeX means Computer Modern and
+nothing else. I had optimised for the choice I could defend in a paragraph over
+the one that was asked for. The lesson generalises past typography: when a brief
+names a recognisable thing, recognisability *is* a requirement, not a preference
+to be traded against screen performance.
+
+Computer Modern's known cost — hairlines drawn for print, a lighter colour on
+screen — is real and was accepted deliberately.
+
+Subsetted 392 KB → **21 KB**, less than half what STIX cost, and FCP is
+unchanged at 20 ms.
+
+#### The correction it needed
+
+CM read as loose on the page, and the reader named it before I did: *the kerning
+and the size of spaces feels slightly out of whack*. Kerning was fine — 265 pairs
+survived the subset, and `AV` kerns −0.111em against Times' −0.129. The spaces
+were not:
+
+| | space | space ÷ x-height |
+| --- | --- | --- |
+| Georgia | 0.241em | 0.501 |
+| Times New Roman | 0.250em | 0.559 |
+| **CMU Serif, uncorrected** | 0.333em | **0.773** |
+
+This is not a flaw in the face. It is **TeX's spacing model arriving without
+TeX**: `cmr10` declares 0.333em of interword space *plus 0.111em of shrink*, and
+TeX spends that shrink routinely while justifying. A browser setting ragged-right
+never spends it. `word-spacing: -0.09em` lands the space at 0.243em — Times'
+ratio to within a percent, and inside the shrink cmr10 itself budgets.
+
+A second, compounding effect: CM's x-height is **0.431em** against STIX's 0.473,
+so `font-size-adjust` dropping from 0.473 to 0.43 made the text render 9% smaller
+to the eye at an unchanged specified size. The large end of the scale went
+1.1875 → 1.25rem to take it back. **Only the large end**: on a phone the column is
+bounded by the viewport rather than by `--measure`, so bigger type there buys
+optical size by spending characters per line, at the width that can least afford
+it. Phone holds at 44ch; desktop body is 20px at exactly 66ch.
+
+*The original ticket's resolution, kept because the measurements are still the
+argument for how the choice was made:*
 
 **STIX Two Text**, self-hosted, 46 KB in two Latin subsets.
 
