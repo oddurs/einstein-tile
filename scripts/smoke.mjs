@@ -279,6 +279,86 @@ else pass(`last caption: "${lastCaption.slice(0, 44)}…"`);
 if (Buffer.compare(beforePix, afterPix) === 0) fail('the grouping did not redraw');
 else pass('changing stage redraws the grouping');
 
+// ── budgets ────────────────────────────────────────────────────────────────
+// Deliberately not Lighthouse. A score is hard to act on and the tool is heavy
+// and flaky in CI; these are the specific things that would actually hurt a
+// reader, asserted where they can fail the build. A full Lighthouse audit stays
+// a manual step — see docs/11-sprint-03.md.
+console.log('\nbudgets:');
+
+const budget = await page.evaluate(() => {
+  const paint = performance.getEntriesByType('paint');
+  const fcp = paint.find((e) => e.name === 'first-contentful-paint')?.startTime ?? 0;
+  const js = performance
+    .getEntriesByType('resource')
+    .filter((r) => r.name.endsWith('.js'))
+    .reduce((n, r) => n + (r.encodedBodySize || r.transferSize || 0), 0);
+  return { fcp: Math.round(fcp), js };
+});
+
+const FCP_MS = 2500; // docs/06 §6
+if (budget.fcp > FCP_MS) fail(`first contentful paint ${budget.fcp}ms > ${FCP_MS}ms`);
+else pass(`first contentful paint ${budget.fcp}ms`);
+
+const JS_KB = 120;
+const kb = Math.round(budget.js / 1024);
+if (kb > JS_KB) fail(`${kb}KB of JavaScript > ${JS_KB}KB budget`);
+else pass(`${kb}KB of JavaScript`);
+
+// Every interactive control must have an accessible name. This is the failure
+// that quietly makes a page unusable with a screen reader.
+const unnamed = await page.evaluate(() =>
+  [...document.querySelectorAll('button, input, a')]
+    .filter((el) => {
+      if (el.hidden || el.closest('[hidden]')) return false;
+      const name =
+        el.getAttribute('aria-label') ||
+        el.textContent?.trim() ||
+        (el.labels?.length ? [...el.labels].map((l) => l.textContent).join('') : '') ||
+        el.getAttribute('title');
+      return !name;
+    })
+    .map((el) => `${el.tagName.toLowerCase()}${el.type ? `[${el.type}]` : ''}`),
+);
+if (unnamed.length) fail(`${unnamed.length} control(s) with no accessible name: ${unnamed.join(', ')}`);
+else pass('every control has an accessible name');
+
+// The document must be navigable by landmark and heading, not just by eye.
+const structure = await page.evaluate(() => ({
+  h1: document.querySelectorAll('h1').length,
+  h2: document.querySelectorAll('h2').length,
+  lang: document.documentElement.lang,
+  title: document.title.length,
+}));
+if (structure.h1 !== 1) fail(`${structure.h1} h1 elements — expected exactly 1`);
+else if (!structure.lang) fail('no lang on <html>');
+else pass(`document structure: 1 h1, ${structure.h2} h2, lang="${structure.lang}"`);
+
+// ── no JavaScript ──────────────────────────────────────────────────────────
+// The prose is the argument and has to survive alone; empty bordered boxes read
+// as a broken page rather than a degraded one.
+console.log('\nwithout JavaScript:');
+const plain = await browser.newContext({
+  viewport: phone.viewport,
+  javaScriptEnabled: false,
+});
+const plainPage = await plain.newPage();
+await plainPage.goto(`http://localhost:${PORT}${BASE}/`, { waitUntil: 'load' });
+await plainPage.waitForTimeout(250);
+
+const visibleStages = await plainPage.$$eval('.stage', (els) =>
+  els.filter((e) => e.getBoundingClientRect().height > 2).length);
+if (visibleStages) fail(`${visibleStages} empty figure(s) left on the page`);
+else pass('empty figures are removed, not left blank');
+
+const proseWords = await plainPage.$$eval(
+  '.prose p, .standfirst, .outro p, .takeaway',
+  (els) => els.map((e) => e.textContent.trim()).join(' ').split(/\s+/).length,
+);
+if (proseWords < 400) fail(`only ${proseWords} words survive without JavaScript`);
+else pass(`${proseWords} words of prose survive without JavaScript`);
+await plain.close();
+
 await browser.close();
 server.close();
 

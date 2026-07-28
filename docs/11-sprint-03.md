@@ -127,7 +127,19 @@ stage taller than its viewport.
 
 ---
 
-### C4. Degrade honestly — **M**
+### C4. Degrade honestly — **M** — ✅ done
+
+With JavaScript off the page was four empty bordered boxes — ~2,700px of blank
+frame — which reads as broken rather than degraded.
+
+**The fix was already written.** The takeaway paragraphs added in N6 for screen
+readers and skim-readers turn out to be exactly the no-JS story: a `<noscript>`
+block hides the figures and promotes each takeaway from a quiet aside to the
+scene's prose. 597 words survive, and the page reads as an article. The same
+rule set is reused for `[data-failed]`, so a scene that throws at runtime
+degrades identically. Writing the meaning down once paid for itself three times.
+
+*Original ticket text:*
 
 - **No JavaScript:** the prose is the argument and should survive alone. Today
   the stages would render as empty bordered boxes, which reads as broken.
@@ -138,7 +150,19 @@ stage taller than its viewport.
 
 ---
 
-### C5. Performance and a11y budgets in CI — **S**
+### C5. Performance and a11y budgets in CI — **S** — ✅ done
+
+**Found the real gap first: the smoke check had never run in CI.** Every push
+verified that the site *compiled*, not that it *worked*. It runs now.
+
+Budgets are asserted in the smoke harness rather than by Lighthouse: first
+contentful paint (20 ms), total JavaScript (29 KB against a 120 KB ceiling),
+every control has an accessible name, exactly one `h1`, `lang` present. A
+Lighthouse *score* is hard to act on and the tool is heavy and flaky in CI;
+these fail with the specific thing that broke. A full Lighthouse audit stays a
+deliberate manual step.
+
+*Original ticket text:*
 
 Lighthouse against the built site on every push, with thresholds that fail the
 build. [09](09-sprint-01.md) ticket X1 left this outstanding; it is cheap now
@@ -146,7 +170,14 @@ that the harness exists.
 
 ---
 
-### C6. The real-device gap — **S**
+### C6. The real-device gap — **S** — ✅ done
+
+[12-verification.md](12-verification.md) — a standing page separating what is
+verified on every push, what was verified once by hand, and what is not verified
+at all. The last list is the important one: Safari, any physical device, and any
+human reader.
+
+*Original ticket text:*
 
 Everything above is emulation. Write down honestly what has and has not been
 verified on physical hardware, so nobody reads green CI as "tested on an

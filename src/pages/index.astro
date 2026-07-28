@@ -35,6 +35,21 @@ const site = `https://oddurs.github.io${base}/`;
   </head>
 
   <body>
+    <noscript>
+      <style>
+        .stage { display: none; }
+        /* Promote every takeaway from a quiet aside to the scene's actual
+           prose, since it is now the only thing carrying it. */
+        .takeaway {
+          padding-left: 0;
+          border-left: 0;
+          font-size: 1em;
+          color: var(--fg);
+        }
+        .no-js-note { display: block !important; }
+      </style>
+    </noscript>
+
     <article>
       <header class="lede" data-scene="hook" data-decorative>
         <figure class="hero" aria-hidden="true">
@@ -220,6 +235,11 @@ const site = `https://oddurs.github.io${base}/`;
           which is exactly why it can never repeat.
         </p>
       </section>
+
+      <p class="no-js-note">
+        The figures on this page are interactive and need JavaScript. Without it
+        you get the argument in words, which is most of it.
+      </p>
 
       <footer class="outro">
         <h2>Afterwards</h2>
@@ -574,6 +594,16 @@ const site = `https://oddurs.github.io${base}/`;
         color: var(--muted);
       }
 
+      .no-js-note {
+        display: none;
+        max-width: var(--measure);
+        margin: 0 auto 2rem;
+        padding-left: 1rem;
+        border-left: 2px solid var(--line);
+        font-size: 0.9em;
+        color: var(--muted);
+      }
+
       .outro { padding-top: 2rem; }
       .fine { font-size: 0.85em; color: var(--muted); }
       a { color: inherit; text-underline-offset: 3px; }
@@ -588,7 +618,18 @@ const site = `https://oddurs.github.io${base}/`;
         white-space: nowrap;
       }
 
+      /* When a figure cannot be shown — no JavaScript, a scene that threw, a
+         canvas context that never arrived — drop the empty frame and let the
+         takeaway carry the scene instead. The takeaways were written for screen
+         readers and skim-readers; they turn out to be the whole no-JS story
+         too, which is the nice thing about writing the meaning down once. */
       [data-failed='true'] .stage { display: none; }
+      [data-failed='true'] .takeaway {
+        padding-left: 0;
+        border-left: 0;
+        font-size: 1em;
+        color: var(--fg);
+      }
     </style>
   </body>
 </html>
