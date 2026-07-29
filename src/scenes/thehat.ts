@@ -56,11 +56,26 @@ export function mountHatScene(root: HTMLElement): () => void {
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const theme = () => (media.matches ? 'dark' : 'light');
 
-  const renderer = new TileRenderer(canvas, { dark: media.matches });
+  /**
+   * Scroll-driven, so the canvas does not claim gestures — which is what lets
+   * it pin at full height without ever swallowing a swipe. Tap-to-advance went
+   * with them: scroll now does that job, and better, because it also goes back.
+   */
+  const renderer = new TileRenderer(canvas, { dark: media.matches, gestures: false });
   let step = 0;
 
+  /**
+   * The beats in the markup are what a scrolling reader sees, so they are the
+   * source for the live caption too — the same sentence authored twice is how
+   * the two drift apart. `STEPS` remains for markup without beats.
+   */
+  const authored = [...root.querySelectorAll('[data-beat]')].map((b) =>
+    (b.textContent ?? '').replace(/\s+/g, ' ').trim(),
+  );
+  const steps: readonly string[] = authored.length > 0 ? authored : STEPS;
+
   slider.min = '0';
-  slider.max = String(STEPS.length - 1);
+  slider.max = String(steps.length - 1);
   slider.step = '1';
   slider.value = '0';
 
@@ -118,14 +133,14 @@ export function mountHatScene(root: HTMLElement): () => void {
     }
 
     renderer.setOverlays(overlays);
-    caption.textContent = STEPS[step]!;
+    caption.textContent = steps[step]!;
     readout.textContent =
       step >= 3 ? '13 sides' : step >= 2 ? '8 kites' : step >= 1 ? '6 kites each' : '3 hexagons';
     if (slider.valueAsNumber !== step) slider.value = String(step);
   };
 
   const show = (next: number) => {
-    step = Math.max(0, Math.min(next, STEPS.length - 1));
+    step = Math.max(0, Math.min(next, steps.length - 1));
     draw();
   };
 
@@ -134,13 +149,9 @@ export function mountHatScene(root: HTMLElement): () => void {
     renderer.setAppearance({ dark: media.matches });
     draw();
   };
-  // Tapping anywhere advances — the same "tap to go on" the rest of the piece
-  // uses, and it saves a reader from having to find the slider.
-  const onTap = () => show(step >= STEPS.length - 1 ? 0 : step + 1);
 
   slider.addEventListener('input', onSlider);
   media.addEventListener('change', onTheme);
-  renderer.onTap = onTap;
 
   show(0);
 

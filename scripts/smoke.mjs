@@ -316,6 +316,92 @@ if (Buffer.compare(mid, atHat) === 0 || Buffer.compare(mid, atTurtle) === 0) {
   fail('the midpoint is identical to an end — the slider is not continuous');
 } else pass('intermediate shapes exist between the two named ones');
 
+// ── scroll-driven scenes ───────────────────────────────────────────────────
+// The screenshot harness once reported "pixel-identical" while being blind to a
+// whole failure class by construction. Scroll is exactly such a class: every
+// assertion above this line looks at a page standing still.
+//
+// The last check here is the safety-critical one. A canvas that claims touch
+// cannot be pinned at full height without stranding a phone reader, so the
+// scroll-driven ones must hand vertical back to the browser. That is not a
+// thing to take on trust — it is the failure that traps somebody.
+console.log('\nscroll-driven scenes:');
+
+for (const [name, sliderSel, steps] of [
+  ['hat', '[data-step]', 4],
+  ['hierarchy', '[data-stage]', 5],
+  ['continuum', '[data-morph]', null],
+]) {
+  const result = await page.evaluate(
+    async ({ name, sliderSel }) => {
+      const section = document.querySelector(`[data-scene="${name}"]`);
+      const track = section?.querySelector('[data-track]');
+      const stage = section?.querySelector('[data-sticky]');
+      const slider = section?.querySelector(sliderSel);
+      if (!track || !stage || !slider) return { error: 'markup missing' };
+      if (getComputedStyle(stage).position !== 'sticky') return { error: 'stage is not sticky' };
+
+      const top = window.scrollY + track.getBoundingClientRect().top;
+      const travel = track.getBoundingClientRect().height - stage.getBoundingClientRect().height;
+      if (travel <= 0) return { error: `no travel (${Math.round(travel)}px)` };
+
+      const tops = [];
+      const values = [];
+      for (let i = 0; i <= 6; i++) {
+        // `behavior: instant` matters: the page sets `scroll-behavior: smooth`,
+        // so an ordinary scrollTo animates and every sample lands mid-flight.
+        window.scrollTo({ top: top + travel * (i / 6), behavior: 'instant' });
+        await new Promise((r) => setTimeout(r, 70));
+        tops.push(Math.round(stage.getBoundingClientRect().top));
+        values.push(Number(slider.value));
+      }
+      return {
+        pinned: new Set(tops.slice(0, 6)).size === 1,
+        values,
+        lit: section.querySelectorAll('.beat.is-current').length,
+        touchAction: getComputedStyle(section.querySelector('canvas')).touchAction,
+      };
+    },
+    { name, sliderSel },
+  );
+
+  if (result.error) {
+    fail(`${name}: ${result.error}`);
+    continue;
+  }
+
+  if (!result.pinned) fail(`${name}: the figure does not stay pinned while its track scrolls`);
+  else pass(`${name}: the figure pins for the whole travel`);
+
+  const { values } = result;
+  const spans = values[0] === 0 && values[values.length - 1] === Number(await page.locator(`[data-scene="${name}"] ${sliderSel}`).getAttribute('max'));
+  const monotone = values.every((v, i) => i === 0 || v >= values[i - 1]);
+  if (!spans || !monotone) fail(`${name}: scroll does not drive the full range — got [${values}]`);
+  else pass(`${name}: scroll drives it end to end [${values}]`);
+
+  if (steps && new Set(values).size > steps) {
+    fail(`${name}: ${new Set(values).size} distinct states for ${steps} steps — not snapping`);
+  } else if (steps) pass(`${name}: snaps to its ${steps} steps`);
+
+  if (result.lit !== 1) fail(`${name}: ${result.lit} beats lit, expected exactly 1`);
+  else pass(`${name}: exactly one beat is current`);
+
+  if (result.touchAction !== 'pan-y') {
+    fail(`${name}: canvas touch-action is "${result.touchAction}" — a swipe on it would trap a phone reader`);
+  } else pass(`${name}: a vertical swipe on the canvas still scrolls the page`);
+}
+
+// The hands-on scenes must NOT have been converted: they are capped in height
+// and keep their gestures, which is the whole reason they are still hands-on.
+for (const name of ['repeat', 'recurrence']) {
+  const ta = await page.evaluate(
+    (n) => getComputedStyle(document.querySelector(`[data-scene="${n}"] canvas`)).touchAction,
+    name,
+  );
+  if (ta !== 'none') fail(`${name}: touch-action is "${ta}" — it needs drag and pinch`);
+  else pass(`${name}: still owns drag and pinch`);
+}
+
 // ── budgets ────────────────────────────────────────────────────────────────
 // Deliberately not Lighthouse. A score is hard to act on and the tool is heavy
 // and flaky in CI; these are the specific things that would actually hurt a

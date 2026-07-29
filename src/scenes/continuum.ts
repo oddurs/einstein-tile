@@ -74,8 +74,22 @@ export function mountContinuumScene(root: HTMLElement): () => void {
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const theme = () => (media.matches ? 'dark' : 'light');
 
-  const renderer = new TileRenderer(canvas, { dark: media.matches });
+  /**
+   * The figure is scroll-driven, so it does not claim pointer gestures — which
+   * is what lets it be tall and pinned without ever swallowing a swipe.
+   */
+  const renderer = new TileRenderer(canvas, { dark: media.matches, gestures: false });
   const tiles = buildPatch(LEVEL).tiles;
+
+  /**
+   * Prefer the beats in the markup: they are what a scrolling reader sees, and
+   * authoring the same sentence twice is how the two versions drift apart.
+   * `CAPTIONS` remains for markup that has no beats, such as the dev harness.
+   */
+  const beats = [...root.querySelectorAll('[data-beat]')].map((b) =>
+    (b.textContent ?? '').replace(/\s+/g, ' ').trim(),
+  );
+  const captions: readonly string[] = beats.length > 0 ? beats : CAPTIONS;
 
   slider.min = '0';
   slider.max = '1000';
@@ -106,7 +120,8 @@ export function mountContinuumScene(root: HTMLElement): () => void {
       renderer.zoomTo(renderer.getView().scale * 0.78);
       fitted = true;
     }
-    caption.textContent = CAPTIONS[Math.min(Math.floor(t * 4.999), CAPTIONS.length - 1)]!;
+    caption.textContent =
+      captions[Math.min(Math.floor(t * captions.length), captions.length - 1)]!;
     readout.textContent =
       t <= 0.001 ? 'the hat' : t >= 0.999 ? 'the turtle' : 'no name';
   };

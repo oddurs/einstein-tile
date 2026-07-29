@@ -42,6 +42,19 @@ export interface RendererOptions {
   /** Fraction of the smaller viewport dimension left as margin by `fit()`. */
   padding?: number;
   onTap?(world: { x: number; y: number }): void;
+  /**
+   * Whether the canvas claims pointer gestures. Default true.
+   *
+   * Claiming them requires `touch-action: none`, which is why a stage is
+   * normally capped in height: a full-bleed canvas that owns touch swallows
+   * vertical scrolling and strands a phone reader (docs/06 §4).
+   *
+   * A scroll-driven figure passes `false`. It does not need drag or pinch —
+   * **scroll is its input** — so it takes `touch-action: pan-y` instead and can
+   * never trap anyone. The height cap exists to protect the reader from the
+   * gesture handler; without the handler, the cap is not needed either.
+   */
+  gestures?: boolean;
 }
 
 interface Bucket {
@@ -132,29 +145,34 @@ export class TileRenderer {
     this.tapOption = opts.onTap;
     this.palette = this.buildPalette();
 
-    // Required for passive pointer listeners — see gestures.ts.
-    canvas.style.touchAction = 'none';
+    // `none` is required for passive pointer listeners — see gestures.ts.
+    // `pan-y` hands vertical back to the browser, so the page always scrolls.
+    canvas.style.touchAction = opts.gestures === false ? 'pan-y' : 'none';
 
-    this.detachGestures = attachGestures(canvas, {
-      onPan: (dx, dy) => {
-        if (this.onDragWorld) {
-          // y is flipped between screen and world.
-          this.onDragWorld(dx / this.view.scale, -dy / this.view.scale);
-          return;
-        }
-        this.view = pan(this.view, dx, dy);
-        this.viewChanged();
-      },
-      onZoom: (factor, cx, cy) => {
-        this.view = zoomAt(this.view, factor, cx, cy);
-        this.viewChanged();
-      },
-      onTap: (x, y) => {
-        const world = toWorld(this.view, x, y);
-        this.onTap?.(world);
-        this.tapOption?.(world);
-      },
-    });
+    const noop = () => {};
+    this.detachGestures =
+      opts.gestures === false
+        ? noop
+        : attachGestures(canvas, {
+            onPan: (dx, dy) => {
+              if (this.onDragWorld) {
+                // y is flipped between screen and world.
+                this.onDragWorld(dx / this.view.scale, -dy / this.view.scale);
+                return;
+              }
+              this.view = pan(this.view, dx, dy);
+              this.viewChanged();
+            },
+            onZoom: (factor, cx, cy) => {
+              this.view = zoomAt(this.view, factor, cx, cy);
+              this.viewChanged();
+            },
+            onTap: (x, y) => {
+              const world = toWorld(this.view, x, y);
+              this.onTap?.(world);
+              this.tapOption?.(world);
+            },
+          });
 
     this.resizeObserver = new ResizeObserver(() => this.syncSize());
     this.resizeObserver.observe(canvas);

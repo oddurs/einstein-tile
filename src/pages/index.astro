@@ -67,7 +67,7 @@ const site = `https://oddurs.github.io${base}/`;
       </header>
 
       <!-- Scene 2 — meet the hat -->
-      <section class="scene" data-scene="hat" aria-labelledby="h-hat">
+      <section class="scene" data-scene="hat" data-scroll style="--beats: 4" aria-labelledby="h-hat">
         <div class="prose">
           <h2 id="h-hat">The shape itself</h2>
           <p>
@@ -79,28 +79,40 @@ const site = `https://oddurs.github.io${base}/`;
           </p>
           <p>
             So it is worth seeing what finally did it, because the answer is
-            almost disappointing. Take a floor of hexagons, cut each one into six
-            kites, and glue eight of the kites together.
+            almost disappointing. Keep scrolling, and watch it get built.
           </p>
         </div>
 
-        <figure class="stage">
-          <canvas
-            data-canvas
-            tabindex="0"
-            role="img"
-            aria-label="The hat, built from eight kites cut out of three hexagons."
-            aria-describedby="alt-hat"
-          ></canvas>
-          <figcaption class="hud">
-            <p data-caption class="hud-prompt" role="status" aria-live="polite"></p>
-            <div class="hud-row slider-row">
-              <label for="step-2" class="visually-hidden">construction step</label>
-              <input id="step-2" data-step type="range" />
-              <span data-readout class="meter" aria-live="polite"></span>
-            </div>
-          </figcaption>
-        </figure>
+        <div class="scroll-track" data-track>
+          <figure class="stage" data-sticky>
+            <canvas
+              data-canvas
+              role="img"
+              aria-label="The hat, built from eight kites cut out of three hexagons."
+              aria-describedby="alt-hat"
+            ></canvas>
+            <figcaption class="hud">
+              <p data-caption class="visually-hidden" role="status" aria-live="polite"></p>
+              <div class="hud-row slider-row">
+                <label for="step-2" class="visually-hidden">construction step</label>
+                <input id="step-2" data-step type="range" />
+                <span data-readout class="meter" aria-live="polite"></span>
+              </div>
+            </figcaption>
+          </figure>
+
+          <ol class="beats">
+            <li class="beat" data-beat>
+              Start with a floor of hexagons. Ordinary, and it repeats.
+            </li>
+            <li class="beat" data-beat>Cut each hexagon into six kites.</li>
+            <li class="beat" data-beat>Now take eight of those kites…</li>
+            <li class="beat" data-beat>
+              …and that is the whole shape. Nothing exotic: eight kites off a
+              hexagon floor.
+            </li>
+          </ol>
+        </div>
 
         <p id="alt-hat" class="takeaway">
           The hat is eight kites cut from a hexagon floor — a thirteen-sided
@@ -197,38 +209,53 @@ const site = `https://oddurs.github.io${base}/`;
       </section>
 
       <!-- Scene 5 — the hierarchy -->
-      <section class="scene" data-scene="hierarchy" aria-labelledby="h-hierarchy">
+      <section class="scene" data-scene="hierarchy" data-scroll style="--beats: 5" aria-labelledby="h-hierarchy">
         <div class="prose">
           <h2 id="h-hierarchy">Why it can’t</h2>
           <p>
             So the tiling is orderly, and it never repeats. Both at once. The
             reason is visible if you stop looking at the tiles and start looking
-            at how they are organised.
+            at how they are organised. Keep going, and pull back.
           </p>
         </div>
 
-        <figure class="stage">
-          <canvas
-            data-canvas
-            tabindex="0"
-            role="img"
-            aria-label="The tiling, coloured by which cluster each tile belongs to at the current grouping level."
-            aria-describedby="alt-hierarchy"
-          ></canvas>
-          <figcaption class="hud">
-            <p data-caption class="hud-prompt" role="status" aria-live="polite"></p>
-            <div class="hud-row slider-row">
-              <span aria-hidden="true" class="end">tiles</span>
-              <label for="stage-5" class="visually-hidden">grouping level</label>
-              <input id="stage-5" data-stage type="range" />
-              <span aria-hidden="true" class="end">whole</span>
-            </div>
-            <p class="hint">
-              Pinch or scroll to zoom — the grouping follows.
-              <span data-readout class="meter"></span>
-            </p>
-          </figcaption>
-        </figure>
+        <div class="scroll-track" data-track>
+          <figure class="stage" data-sticky>
+            <canvas
+              data-canvas
+              role="img"
+              aria-label="The tiling, coloured by which cluster each tile belongs to at the current grouping level."
+              aria-describedby="alt-hierarchy"
+            ></canvas>
+            <figcaption class="hud">
+              <p data-caption class="visually-hidden" role="status" aria-live="polite"></p>
+              <div class="hud-row slider-row">
+                <span aria-hidden="true" class="end">tiles</span>
+                <label for="stage-5" class="visually-hidden">grouping level</label>
+                <input id="stage-5" data-stage type="range" />
+                <span aria-hidden="true" class="end">whole</span>
+                <span data-readout class="meter" aria-live="polite"></span>
+              </div>
+            </figcaption>
+          </figure>
+
+          <ol class="beats">
+            <li class="beat" data-beat>One shape, laid down over and over.</li>
+            <li class="beat" data-beat>
+              The tiles clump into groups — always the same four kinds.
+            </li>
+            <li class="beat" data-beat>
+              Those groups clump into bigger groups. The same four kinds again.
+            </li>
+            <li class="beat" data-beat>
+              And again, larger still. Every level looks like the one below it.
+            </li>
+            <li class="beat" data-beat>
+              It never stops — so there is no block you could stamp out, at any
+              size. That is why it can never repeat.
+            </li>
+          </ol>
+        </div>
 
         <p id="alt-hierarchy" class="takeaway">
           Tiles group into four kinds of cluster; those clusters group into the
@@ -239,7 +266,7 @@ const site = `https://oddurs.github.io${base}/`;
       </section>
 
       <!-- Scene 7 — the continuum -->
-      <section class="scene" data-scene="continuum" aria-labelledby="h-continuum">
+      <section class="scene" data-scene="continuum" data-scroll style="--beats: 5" aria-labelledby="h-continuum">
         <div class="prose">
           <h2 id="h-continuum">And it isn’t even one shape</h2>
           <p>
@@ -248,30 +275,53 @@ const site = `https://oddurs.github.io${base}/`;
             continuous family of shapes — and the whole family works, the same
             way, for the same reason.
           </p>
-          <p>Stretch it.</p>
+          <p>Keep going, and watch the tile stretch.</p>
         </div>
 
-        <figure class="stage">
-          <canvas
-            data-canvas
-            role="img"
-            aria-label="A tiling whose tile stretches continuously from the hat to a longer shape called the turtle, without the arrangement changing."
-            aria-describedby="alt-continuum"
-          ></canvas>
-          <figcaption class="hud">
-            <p data-caption class="hud-prompt" role="status" aria-live="polite"></p>
-            <div class="hud-row slider-row">
-              <span aria-hidden="true" class="end">hat</span>
-              <label for="morph" class="visually-hidden">shape</label>
-              <input id="morph" data-morph type="range" />
-              <span aria-hidden="true" class="end">turtle</span>
-            </div>
-            <p class="hint">
-              Drag to stretch the tile.
-              <span data-readout class="meter" aria-live="polite"></span>
-            </p>
-          </figcaption>
-        </figure>
+        <div class="scroll-track" data-track>
+          <figure class="stage" data-sticky>
+            <canvas
+              data-canvas
+              role="img"
+              aria-label="A tiling whose tile stretches continuously from the hat to a longer shape called the turtle, without the arrangement changing."
+              aria-describedby="alt-continuum"
+            ></canvas>
+            <figcaption class="hud">
+              <p data-caption class="visually-hidden" role="status" aria-live="polite"></p>
+              <div class="hud-row slider-row">
+                <span aria-hidden="true" class="end">hat</span>
+                <label for="morph" class="visually-hidden">shape</label>
+                <input id="morph" data-morph type="range" />
+                <span aria-hidden="true" class="end">turtle</span>
+                <span data-readout class="meter" aria-live="polite"></span>
+              </div>
+            </figcaption>
+          </figure>
+
+          <!-- The beats are the scene's captions, authored once, here. The
+               scene reads them back for its live region, so a screen reader and
+               a scrolling reader are never told different things. -->
+          <ol class="beats">
+            <li class="beat" data-beat>
+              The hat. Every edge is about to stretch — but the arrangement will
+              not move.
+            </li>
+            <li class="beat" data-beat>
+              Every edge is stretching or shrinking, and nothing has come apart.
+              No gaps, no overlaps.
+            </li>
+            <li class="beat" data-beat>
+              Halfway. A shape with no name, and it tiles exactly like the
+              others.
+            </li>
+            <li class="beat" data-beat>
+              Still going. Still the same tiling underneath.
+            </li>
+            <li class="beat" data-beat>
+              The turtle. A different shape, in exactly the same arrangement.
+            </li>
+          </ol>
+        </div>
 
         <p id="alt-continuum" class="takeaway">
           Every edge of the hat has one of two lengths. Change those two lengths
@@ -327,14 +377,26 @@ const site = `https://oddurs.github.io${base}/`;
       import { mountRecurrenceScene } from '../scenes/recurrence.js';
       import { mountContinuumScene } from '../scenes/continuum.js';
       import { mountHierarchyScene } from '../scenes/hierarchy.js';
+      import { scrollDriven } from '../scenes/scroll.js';
 
       mountScenes({
         hook: mountHookScene,
-        hat: mountHatScene,
+        // Four discrete steps, so progress snaps to them — a figure resting
+        // between two stages reads as a bug rather than as a step.
+        hat: scrollDriven(mountHatScene, '[data-step]', 4),
+        // `repeat` and `recurrence` are deliberately absent from the
+        // scroll-driven list. They are about the reader's own hands — repeat
+        // was rebuilt precisely because someone said they didn't get it, and
+        // the fix was to make you slide the copy yourself. Driving those from
+        // scroll would hand back the watching and take away the doing.
         repeat: mountRepeatScene,
         recurrence: mountRecurrenceScene,
-        hierarchy: mountHierarchyScene,
-        continuum: mountContinuumScene,
+        // Five discrete stages. The earlier claim that this stalled 185ms was
+        // a bad measurement — the test fed fractional values into a step=1
+        // control, so every call minted a new colour token and missed the
+        // renderer's path cache. On integer stages it costs 8.3ms like the rest.
+        hierarchy: scrollDriven(mountHierarchyScene, '[data-stage]', 5),
+        continuum: scrollDriven(mountContinuumScene, '[data-morph]'),
       });
     </script>
 
@@ -354,9 +416,15 @@ const site = `https://oddurs.github.io${base}/`;
         margin: 0;
         /* The hook bleeds past the article to reach the page edges, which
            otherwise adds up to ~60px of horizontal scroll at every width below
-           desktop. Clipping here is the robust fix; nothing on the page uses
-           position:sticky, which is the usual reason not to. */
-        overflow-x: hidden;
+           desktop.
+
+           `clip`, not `hidden`. They look identical and are not: `hidden` makes
+           this element a scroll container, and a scroll container is what
+           `position: sticky` sticks to — so every sticky stage would pin to the
+           document rather than to the viewport and simply never move. `clip`
+           does the clipping without the scrollport, which is exactly what was
+           wanted here in the first place. */
+        overflow-x: clip;
         background: var(--bg);
         color: var(--fg);
         font-family: var(--face);
@@ -507,6 +575,109 @@ const site = `https://oddurs.github.io${base}/`;
         height: 62dvh;
         max-height: 640px;
         touch-action: none;
+      }
+
+      /* ---- Scroll-driven scenes -------------------------------------------
+         The figure pins while the section scrolls past it, and the beats — the
+         sentences it is evidence for — rise through the space underneath. This
+         is the fix for the thing that was actually wrong: at every width, a
+         stage took ~78% of the viewport, so the figure and the sentence
+         explaining it were never on screen at the same time.
+
+         The height cap can be lifted here, and only here, because these
+         canvases pass `gestures: false` and so take `touch-action: pan-y`. A
+         vertical swipe on them always scrolls the page. There is no trap
+         available to build. */
+      [data-scroll] .scroll-track {
+        position: relative;
+        /* The pinned height. Everything else is sized against it, so the parts
+           cannot drift apart. */
+        --pin: 50dvh;
+        /* Scroll spent on each beat — the one number that tunes how long the
+           piece feels, and it was needed immediately. At 62dvh the piece came
+           out at 17.1 viewports against a planned 13, so the plan's estimate
+           was 30% optimistic and this is what paid for it. Nothing else moved,
+           which was the argument for keeping the knob in one place. */
+        --beat-travel: 45dvh;
+        min-height: calc(var(--pin) + 11rem + var(--beats, 4) * var(--beat-travel));
+      }
+
+      [data-scroll] .stage {
+        position: sticky;
+        top: max(1rem, 3dvh);
+        /* Above the beats, which slide behind its lower edge. */
+        z-index: 1;
+        margin-top: 0;
+      }
+
+      [data-scroll] .stage canvas {
+        height: var(--pin);
+        max-height: 560px;
+      }
+
+      /* The HUD keeps the slider, which is doing three jobs at once: the
+         keyboard path, the reduced-motion interface, and a progress indicator
+         that happens to move as you scroll. It loses the drag hint, because
+         the beats now say what it used to. */
+      [data-scroll] .hud {
+        padding: 10px 18px;
+      }
+
+      /* The readout named the shape beside an end label that already named it
+         — "turtle · the turtle" — and the beats now say it in a sentence. Keep
+         it for the live region, drop it from the layout. */
+      [data-scroll] .slider-row .meter {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      /* The beats pin too, just under the figure, and cross-fade.
+         They used to scroll past it, which was wrong for a reason worth
+         recording: a beat travelled one window-height during its turn, but had
+         to cross the *whole* pinned figure to get out of sight — so it spent
+         part of its turn behind the figure, leaving an orphaned last line
+         floating under the card. Pinning removes the geometry problem instead
+         of tuning it, and holds the sentence still while its figure moves. */
+      [data-scroll] .beats {
+        position: sticky;
+        top: calc(var(--pin) + 7.5rem);
+        /* Every beat in one grid cell, so they cross-fade in place and the
+           block never changes height as the text changes. */
+        display: grid;
+        margin: 0 auto;
+        padding: 0;
+        list-style: none;
+        min-height: 7rem;
+        max-width: var(--measure-caption);
+      }
+
+      [data-scroll] .beat {
+        grid-area: 1 / 1;
+        font-size: var(--type-body);
+        line-height: var(--leading-body);
+        color: var(--fg);
+        opacity: 0;
+        transition: opacity 240ms ease;
+      }
+
+      [data-scroll] .beat.is-current { opacity: 1; }
+
+      /* Nothing above is allowed to depend on motion. Without it the figure is
+         an ordinary stage with an ordinary slider, and the beats are an
+         ordinary list of sentences — the argument arrives intact, just still. */
+      @media (prefers-reduced-motion: reduce) {
+        [data-scroll] .scroll-track { min-height: 0; }
+        [data-scroll] .stage,
+        [data-scroll] .beats { position: static; }
+        [data-scroll] .beats { display: block; }
+        [data-scroll] .beat {
+          margin-bottom: 0.9rem;
+          opacity: 1;
+        }
       }
 
       /* Landscape phones: a 62dvh canvas plus a HUD is taller than the whole

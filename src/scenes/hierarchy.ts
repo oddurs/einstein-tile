@@ -82,7 +82,22 @@ export function mountHierarchyScene(
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const theme = () => (media.matches ? 'dark' : 'light');
 
-  const renderer = new TileRenderer(canvas, { dark: media.matches });
+  /**
+   * Scroll-driven, so no gestures — which also removes the pinch-to-zoom this
+   * scene used to advertise. No loss: zoom and grouping were always the *same*
+   * one-dimensional reveal, and scroll now moves along it. `onViewChange`
+   * stays wired for the sandbox, where gestures are still on.
+   */
+  const renderer = new TileRenderer(canvas, { dark: media.matches, gestures: false });
+
+  /**
+   * Prefer the beats in the markup, so a scrolling reader and the live region
+   * are never told different things. `CAPTIONS` remains for markup without.
+   */
+  const authored = [...root.querySelectorAll('[data-beat]')].map((b) =>
+    (b.textContent ?? '').replace(/\s+/g, ' ').trim(),
+  );
+  const captions: readonly string[] = authored.length > 0 ? authored : CAPTIONS;
   const patch = buildPatch(level);
 
   let stages = buildStages(patch, level, theme());
@@ -118,7 +133,7 @@ export function mountHierarchyScene(
     // Passing the stage's own overlay object (not a copy) lets the renderer
     // reuse its built path.
     renderer.setOverlays(stage.overlay.loops.length ? [stage.overlay] : []);
-    caption.textContent = CAPTIONS[Math.min(i, CAPTIONS.length - 1)]!;
+    caption.textContent = captions[Math.min(i, captions.length - 1)]!;
     readout.textContent =
       stage.depth === null
         ? `${patch.tiles.length.toLocaleString()} tiles`

@@ -11,6 +11,76 @@
 damage the piece. A hybrid is a clear gain, and the measurements say exactly
 where the line falls.
 
+## What shipped — ✅
+
+All three scalar scenes are scroll-driven: **the hat**, **the hierarchy** and
+**the continuum**. `repeat` and `recurrence` are untouched and still own drag and
+pinch. 16 new assertions in the smoke check, including the trap test.
+
+### The one design decision that paid for everything
+
+`scroll.ts` **writes to the existing range input** rather than calling the
+scene's `show()`. The slider stays the single source of truth, and that one
+choice meant:
+
+- `continuum.ts` and `thehat.ts` needed no rewrite — they cannot tell the
+  difference;
+- keyboard access is untouched, because the control is still a real labelled
+  range input rather than something scroll simulates;
+- `prefers-reduced-motion` is a one-line opt-out: don't attach, and the slider
+  is already the whole interface;
+- the slider doubles as a visible progress indicator, for free.
+
+### Three things the measurements corrected
+
+**1. The 185ms hierarchy stall was my own bad measurement.** The perf harness
+swept 40 *fractional* values through a `step=1` control, so every call minted a
+new colour token (`light:0.1025`) and missed the renderer's path cache. On real
+integer stages it costs **8.3ms**, like everything else — so hierarchy was
+scroll-driven after all, and S4's "precompute or leave it alone" was answered by
+deleting the premise.
+
+**2. `overflow-x: hidden` on `<body>` would have broken every sticky stage.**
+`hidden` makes an element a scroll container, and a scroll container is what
+`position: sticky` sticks to. The comment there said it was safe *because
+nothing on the page used sticky* — true when written, and about to stop being
+true. `overflow-x: clip` clips without creating the scrollport.
+
+**3. `.track` was already the repeat scene's progress bar** — `height: 8px;
+overflow: hidden`. The new container inherited both and collapsed to 8px. Renamed
+`.scroll-track`. Reusing a name that already means something else is not a
+collision to work around; it is the bug.
+
+### The beats had to pin too
+
+They first scrolled past the figure, which was wrong for a recordable reason: a
+beat travelled one window-height during its turn but had to cross the *whole*
+pinned figure to leave the screen, so it spent part of its turn behind the
+figure — leaving an orphaned last line floating under the card. Pinning the
+beats and cross-fading them removes the geometry problem rather than tuning it.
+
+### The cost was worse than predicted, and then paid
+
+The plan estimated ~13 viewports. At `--beat-travel: 62dvh` it came out at
+**17.1** — the estimate was 30% optimistic. Cutting the one knob to 45dvh brought
+it to **14.8 viewports**, and nothing else moved, which was the whole argument
+for keeping the travel distance in a single number.
+
+| | before | after |
+| --- | --- | --- |
+| page height, phone | 9.0 viewports | 14.8 |
+| stages as a share of scroll | 45% | 23% |
+| words of prose | 719 | 718 |
+
+The word count is the number that matters: the piece is not longer to *read*.
+
+### Still open
+
+Desktop uses the same single-column layout as the phone, where a wide viewport
+could put the beats beside the figure instead of beneath it. And no human has
+scrolled this yet — the pacing claim above is a claim about a reader, and remains
+unverified.
+
 ## Measured before planning
 
 ### The piece is nine viewports of near-misses

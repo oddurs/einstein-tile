@@ -6,6 +6,11 @@ An interactive explainer for the einstein tile: one ordinary-looking polygon
 that covers an endless floor without the pattern ever repeating. Six scenes,
 about three minutes.
 
+Three of them are driven by scroll — the hat assembles, the hierarchy pulls
+back, the tile stretches into the turtle — because those scenes were already a
+function of one number and scroll is one number. The other two are not, and
+that is deliberate: they are the ones where you use your hands.
+
 > Slide a copy of a hexagon floor onto itself and it clicks. Slide a copy of
 > this one and it never does — and there are only thirty-one slides that could
 > possibly have worked, so you can try them all.
