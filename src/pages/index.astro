@@ -82,7 +82,8 @@ const site = `https://oddurs.github.io${base}/`;
           </p>
           <p>
             So it is worth seeing what finally did it, because the answer is
-            almost disappointing. Keep scrolling, and watch it get built.
+            almost disappointing. Take a floor of hexagons, cut each one into
+            six kites, and glue eight of the kites together.
           </p>
         </div>
 
@@ -106,21 +107,27 @@ const site = `https://oddurs.github.io${base}/`;
 
           <ol class="beats">
             <li class="beat" data-beat>
-              Start with a floor of hexagons. Ordinary, and it repeats.
+              A floor of hexagons — the most ordinary tiling there is. It
+              repeats in every direction, and always has.
             </li>
-            <li class="beat" data-beat>Cut each hexagon into six kites.</li>
-            <li class="beat" data-beat>Now take eight of those kites…</li>
             <li class="beat" data-beat>
-              …and that is the whole shape. Nothing exotic: eight kites off a
-              hexagon floor.
+              Cut each hexagon into six kites. Still ordinary, still repeating.
+            </li>
+            <li class="beat" data-beat>
+              Now take eight of those kites, reaching across three neighbouring
+              hexagons.
+            </li>
+            <li class="beat" data-beat>
+              That is the whole shape. Nothing was added that the hexagon floor
+              did not already contain.
             </li>
           </ol>
         </div>
 
         <p id="alt-hat" class="takeaway">
-          The hat is eight kites cut from a hexagon floor — a thirteen-sided
-          polygon with no unusual angles. Shapes like it had been catalogued and
-          overlooked before, because nobody had tried to tile with one.
+          Thirteen sides, no unusual angles, nothing you could not have drawn
+          yourself. Shapes like it had been catalogued and walked straight past
+          for years — because nobody had thought to try tiling with one.
         </p>
       </section>
 
@@ -266,9 +273,9 @@ const site = `https://oddurs.github.io${base}/`;
 
         <p id="alt-hierarchy" class="takeaway">
           Tiles group into four kinds of cluster; those clusters group into the
-          same four kinds, larger; and so on without end. A repeating pattern
-          needs a block you can stamp out. This has no such block at any size —
-          which is exactly why it can never repeat.
+          same four kinds, larger; and so on for ever. A pattern that repeats
+          must have some block you can stamp out — and a hierarchy with no
+          smallest level and no largest one never offers you a candidate.
         </p>
       </section>
 
@@ -362,9 +369,10 @@ const site = `https://oddurs.github.io${base}/`;
         <p>
           What nobody has is a reason. There is no theory that says which shapes
           will behave like this, which is why the hat sat in catalogues for years
-          with nobody noticing — it does not look like anything in particular. It
-          still doesn’t.
+          with nobody noticing: it does not look like anything in particular.
         </p>
+
+        <p class="coda">It still doesn’t.</p>
         <p class="make-link">
           <a href={`${base}/make/`}>Make one of your own →</a>
         </p>
@@ -776,6 +784,18 @@ const site = `https://oddurs.github.io${base}/`;
          immediately. The hook is the only place a reader decides whether to
          go, and it was making no case at all — so it asks, once, quietly, and
          then gets out of the way the moment the reader has answered. */
+      /* The piece's best line was the fourth sentence of a colophon. It is the
+         only thing a reader is likely to repeat to someone else, so it gets to
+         be the last thing on the page rather than a clause inside a paragraph
+         about attribution. */
+      .coda {
+        margin: 2.2rem 0 3rem;
+        font-size: var(--type-lead);
+        line-height: var(--leading-lead);
+        text-indent: 0;
+        color: var(--fg);
+      }
+
       .cue {
         display: flex;
         align-items: center;

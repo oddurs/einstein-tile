@@ -23,7 +23,7 @@ import {
   toPoint,
   type Point,
 } from '../engine/index.js';
-import { METATILE } from '../renderer/palette.js';
+import { INK, METATILE, STROKE_WIDTH } from '../renderer/palette.js';
 import { TileRenderer, type Overlay } from '../renderer/renderer.js';
 import { bind } from './scene.js';
 
@@ -82,11 +82,13 @@ export function mountHatScene(root: HTMLElement): () => void {
   const colours = () => {
     const t = theme();
     return {
-      hex: t === 'dark' ? '#2c343d' : '#dde3e8',
-      hexLine: t === 'dark' ? 'rgba(240,239,236,0.30)' : 'rgba(26,26,25,0.22)',
-      kiteLine: t === 'dark' ? 'rgba(240,239,236,0.42)' : 'rgba(26,26,25,0.30)',
+      // The hexagons are the workbench, not the subject, so they take
+      // `scaffold` and the cuts take construction weights.
+      hex: INK[t].scaffold,
+      hexLine: INK[t].grid,
+      kiteLine: INK[t].guide,
       hat: METATILE[t].P,
-      hatLine: t === 'dark' ? 'rgba(240,250,255,0.85)' : 'rgba(10,45,80,0.7)',
+      hatLine: INK[t].outline,
     };
   };
 
@@ -105,7 +107,7 @@ export function mountHatScene(root: HTMLElement): () => void {
     );
 
     const overlays: Overlay[] = [
-      { loops: HEXES.map((h) => asPoints(hexOutline(h))), stroke: c.hexLine, width: 1.5 },
+      { loops: HEXES.map((h) => asPoints(hexOutline(h))), stroke: c.hexLine, width: STROKE_WIDTH.fine },
     ];
 
     // Step 1 onward: show the cuts. Every kite of every hexagon, so the reader
@@ -117,7 +119,7 @@ export function mountHatScene(root: HTMLElement): () => void {
           allKites.push(asPoints(kiteOutline({ centre, index })));
         }
       }
-      overlays.push({ loops: allKites, stroke: c.kiteLine, width: 1 });
+      overlays.push({ loops: allKites, stroke: c.kiteLine, width: STROKE_WIDTH.hairline });
     }
 
     // Step 2: the eight, filled but still visibly separate pieces.
@@ -128,7 +130,7 @@ export function mountHatScene(root: HTMLElement): () => void {
         loops: chosen,
         fill: c.hat,
         stroke: step >= 3 ? undefined : c.hatLine,
-        width: 1.2,
+        width: STROKE_WIDTH.strong,
       });
     }
 

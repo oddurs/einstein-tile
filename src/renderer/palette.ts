@@ -57,7 +57,9 @@ export const SURFACE = {
   dark: '#1a1a19',
 } as const;
 
-const STROKE = {
+/** The hairline between neighbouring tiles. Exported because the SVG export
+ *  needs the same value the canvas uses, and had been keeping its own copy. */
+export const TILE_STROKE = {
   light: 'rgba(26,26,25,0.42)',
   dark: 'rgba(0,0,0,0.5)',
 } as const;
@@ -110,6 +112,69 @@ export const ORIENTATION_ACCESSIBLE = {
   ],
 } as const;
 
+// ── ink: the supporting marks every scene draws ───────────────────────────
+/**
+ * The colours that are not tile identity.
+ *
+ * These existed before this block did — as **fourteen one-off `rgba()` values
+ * and four different greys**, one set per scene, each a reasonable local choice
+ * and collectively the reason the scenes looked like five programs. Measured:
+ *
+ * | | hat | repeat | recurrence | hierarchy |
+ * | --- | --- | --- | --- | --- |
+ * | light | `#dde3e8` | `#ccd3da` | `#d3d9de` | `#aab6bf` |
+ * | dark | `#2c343d` | `#38414d` | `#333c46` | `#4a5c68` |
+ *
+ * Averaging those into one grey would have been the wrong fix, because they
+ * were doing **two** jobs, not one:
+ *
+ * - `scaffold` — structure the reader looks *through*. The hat's hexagons are
+ *   the workbench, not the subject; they must recede.
+ * - `plain` — a tile that *is* the subject but has no identity yet. Stage 0 of
+ *   the hierarchy is 7,921 of these, and if they do not separate from the
+ *   surface then "one shape, over and over" reads as one grey mass — which is
+ *   the opposite of that scene's point.
+ *
+ * So: two roles, stated, instead of four accidents.
+ *
+ * `outline` replaces four hand-matched strokes (`hatLine`, `landedStroke`,
+ * `echoLine`, `pickLine`) that had already converged — three of the four were
+ * `rgba(10,45,80,·)` at different alphas — without anyone noticing they had.
+ */
+export const INK = {
+  light: {
+    scaffold: '#dde3e8',
+    plain: '#b9c3cc',
+    grid: 'rgba(26,26,25,0.22)',
+    guide: 'rgba(26,26,25,0.32)',
+    ghost: 'rgba(70,130,190,0.20)',
+    ghostLine: 'rgba(45,95,150,0.62)',
+    outline: 'rgba(12,30,52,0.72)',
+  },
+  dark: {
+    scaffold: '#2c343d',
+    plain: '#46525e',
+    grid: 'rgba(240,239,236,0.30)',
+    guide: 'rgba(240,239,236,0.42)',
+    ghost: 'rgba(120,175,225,0.22)',
+    ghostLine: 'rgba(150,195,240,0.75)',
+    outline: 'rgba(240,248,255,0.88)',
+  },
+} as const;
+
+/**
+ * Stroke weights, so that 1.4 versus 1.5 is a choice and not a coincidence.
+ * The scenes used 1, 1.2, 1.4, 1.5 and 1.6 with no rule telling them apart.
+ */
+export const STROKE_WIDTH = {
+  /** Construction lines, seen through. */
+  hairline: 1,
+  /** A boundary that matters but is not the subject. */
+  fine: 1.2,
+  /** The thing being pointed at. */
+  strong: 1.6,
+} as const;
+
 export interface PaletteOptions {
   dark?: boolean;
   mode?: ColourMode;
@@ -123,7 +188,7 @@ export function makePalette(
 
   return {
     background: SURFACE[theme],
-    stroke: STROKE[theme],
+    stroke: TILE_STROKE[theme],
     strokeWidth: 0.75,
     fill(key) {
       switch (scheme) {

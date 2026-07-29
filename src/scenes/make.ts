@@ -32,7 +32,7 @@ import {
   type Point,
   type Tile,
 } from '../engine/index.js';
-import { makePalette, SURFACE } from '../renderer/palette.js';
+import { makePalette, SURFACE, TILE_STROKE } from '../renderer/palette.js';
 import { TileRenderer } from '../renderer/renderer.js';
 import { bind } from './scene.js';
 
@@ -171,7 +171,7 @@ export function toSVG(design: Design, size = 2000): string {
     .map((f) => `<polygon points="${f.points.map(at).join(' ')}" fill="${f.fill}"/>`)
     .join('');
   const surface = design.dark ? SURFACE.dark : SURFACE.light;
-  const stroke = design.dark ? 'rgba(0,0,0,0.5)' : 'rgba(26,26,25,0.42)';
+  const stroke = TILE_STROKE[design.dark ? 'dark' : 'light'];
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(w * scale)}" ` +

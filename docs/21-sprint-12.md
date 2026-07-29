@@ -11,6 +11,77 @@
 rest are craft. Nothing here is a rewrite — the piece works; it is inconsistent
 in ways that are individually invisible and collectively cheapening.
 
+## What shipped — ✅
+
+All six. `INK` and `STROKE_WIDTH` in `palette.ts`, **zero colour literals left
+in any scene**, and `test/ink.test.ts` (21 assertions) to keep it that way.
+
+### The gate found one on its first run
+
+The check caught `'#888'` in `hierarchy.ts` — a fallback fill nobody had
+noticed, sitting in the load-bearing scene. It is now `INK[theme].plain`, which
+is what a tile with no identity at this depth actually is.
+
+That is the argument for S6 in one incident: the four greys were never
+*decided*, they accumulated, and only a check notices accumulation.
+
+### Two roles, not one grey
+
+Averaging the four greys would have been wrong. They were doing two jobs:
+`scaffold` (structure looked *through* — the hat's hexagons) and `plain` (a tile
+that **is** the subject but has no identity yet — 7,921 of them at stage 0 of
+the hierarchy, where failing to separate from the surface would inflict exactly
+the "one grey mass" that scene exists to disprove). Checked by looking, in both
+themes: stage 0 still reads as individual hats.
+
+### The redundancy had a cause, not just a symptom
+
+The hat's takeaway repeated its last beat because **sprint 10 had deleted the
+construction sentence from the prose** — *"Take a floor of hexagons, cut each one
+into six kites, and glue eight of the kites together"* — replacing it with *"Keep
+scrolling."* That left the takeaway as the only place a no-JS reader could learn
+what the hat is, so it had to say what the beats said.
+
+Restoring the sentence to the prose freed the takeaway to do its own job. The
+fix was upstream of where the problem showed.
+
+Hierarchy keeps its punchline **in the beat**, where it lands on the zoomed-out
+figure; the takeaway now states the structure and adds *"no smallest level and no
+largest one"*, which is new information rather than a second telling.
+
+**The no-JS prose went up, not down: 719 → 729 words**, which is the constraint
+`npm run verify` enforces.
+
+### Numbers
+
+| | before | after |
+| --- | --- | --- |
+| colour literals in scenes | **15** | **0** |
+| greys for "inactive" | 4 | 2 (two different roles) |
+| distinct stroke widths | 5, unruled | 3, named |
+| unit tests | 147 | **168** |
+| words | 874 | 904 (≈4 min) |
+| no-JS prose | 719 | **729** |
+
+`landed` vs `missed` — the one pair the piece asks a reader to tell apart by
+colour alone, drawn from two *different* validated palettes and therefore never
+checked against each other — now passes all three CVD simulations at ΔE ≥ 8 and
+normal vision at ΔE ≥ 15.
+
+### Not done as planned
+
+**S5 was applied only to the hat.** Its beats were stage directions; they now
+say things the figure cannot (*"the most ordinary tiling there is"*, *"reaching
+across three neighbouring hexagons"*, *"nothing was added that the hexagon floor
+did not already contain"*). The hierarchy and continuum beats were left alone —
+re-reading them, they already did this, and the ticket said to keep the originals
+where a rewrite was not plainly better.
+
+**S4 got typography, not a picture.** The outro's best line — *"It still
+doesn't."* — is now a coda set at lead size rather than a clause in the fourth
+paragraph of a colophon. Showing the spectre would have meant engine work the
+sprint explicitly excluded, so it remains named-but-unshown.
+
 ## Measured before planning
 
 ### Four scenes, four different greys for the same idea

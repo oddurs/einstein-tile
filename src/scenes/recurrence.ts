@@ -32,7 +32,7 @@ import {
   type Piece,
   type Point,
 } from '../engine/index.js';
-import { METATILE } from '../renderer/palette.js';
+import { INK, METATILE, STROKE_WIDTH } from '../renderer/palette.js';
 import { TileRenderer, type Overlay } from '../renderer/renderer.js';
 import { bind } from './scene.js';
 
@@ -99,11 +99,11 @@ export function mountRecurrenceScene(root: HTMLElement): () => void {
   const colours = () => {
     const t = theme();
     return {
-      base: t === 'dark' ? '#333c46' : '#d3d9de',
+      base: INK[t].plain,
       pick: METATILE[t].H,
-      pickLine: t === 'dark' ? 'rgba(255,235,240,0.95)' : 'rgba(70,10,25,0.85)',
+      pickLine: INK[t].outline,
       echo: METATILE[t].P,
-      echoLine: t === 'dark' ? 'rgba(230,245,255,0.7)' : 'rgba(10,45,80,0.55)',
+      echoLine: INK[t].outline,
     };
   };
 
@@ -123,14 +123,14 @@ export function mountRecurrenceScene(root: HTMLElement): () => void {
       for (const shift of found.slice(0, MAX_MARKS)) {
         for (const i of selection) echoes.push(shiftPoints(pieces[i]!.points, shift));
       }
-      overlays.push({ loops: echoes, fill: c.echo, stroke: c.echoLine, width: 1 });
+      overlays.push({ loops: echoes, fill: c.echo, stroke: c.echoLine, width: STROKE_WIDTH.fine });
     }
     if (selection.length) {
       overlays.push({
         loops: selection.map((i) => pieces[i]!.points),
         fill: c.pick,
         stroke: c.pickLine,
-        width: 1.6,
+        width: STROKE_WIDTH.strong,
       });
     }
     renderer.setOverlays(overlays);

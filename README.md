@@ -4,7 +4,7 @@
 
 An interactive explainer for the einstein tile: one ordinary-looking polygon
 that covers an endless floor without the pattern ever repeating. Six scenes,
-about three minutes.
+about four minutes.
 
 Three of them are driven by scroll — the hat assembles, the hierarchy pulls
 back, the tile stretches into the turtle — because those scenes were already a
@@ -74,7 +74,7 @@ because they were not obvious:
 ```bash
 npm install
 npm run dev        # the piece, at /einstein-tile/
-npm run verify     # typecheck, 142 unit tests, browser smoke check
+npm run verify     # typecheck, 168 unit tests, browser smoke check
 npm run og         # regenerate the share card from the engine
 ```
 
@@ -105,7 +105,7 @@ The research came first and is kept separately from the product decisions.
 | [12 Verification](docs/12-verification.md) | What is verified, and what isn't |
 | [References](docs/references.md) | Annotated bibliography |
 
-Sprint records are `docs/09`–`11` and `13`–`15`.
+Sprint records are `docs/09`–`11` and `13`–`21`.
 
 ## Typography
 

@@ -44,7 +44,7 @@ import {
   toX,
   toY,
 } from '../engine/index.js';
-import { METATILE, REFLECTION } from '../renderer/palette.js';
+import { INK, METATILE, REFLECTION, STROKE_WIDTH } from '../renderer/palette.js';
 import { TileRenderer, type Overlay } from '../renderer/renderer.js';
 import { bind } from './scene.js';
 
@@ -134,11 +134,11 @@ export function mountRepeatScene(root: HTMLElement): () => void {
   const colours = () => {
     const t = theme();
     return {
-      base: t === 'dark' ? '#38414d' : '#ccd3da',
-      copyFill: t === 'dark' ? 'rgba(120,175,225,0.22)' : 'rgba(70,130,190,0.20)',
-      copyStroke: t === 'dark' ? 'rgba(150,195,240,0.75)' : 'rgba(45,95,150,0.6)',
+      base: INK[t].plain,
+      copyFill: INK[t].ghost,
+      copyStroke: INK[t].ghostLine,
       landed: METATILE[t].P,
-      landedStroke: t === 'dark' ? 'rgba(240,250,255,0.9)' : 'rgba(10,45,80,0.75)',
+      landedStroke: INK[t].outline,
       miss: REFLECTION[t].mirrored,
     };
   };
@@ -190,13 +190,13 @@ export function mountRepeatScene(root: HTMLElement): () => void {
       (landed.has(i) ? hits : copy).push(shifted(piece));
     }
 
-    overlays.push({ loops: copy, fill: c.copyFill, stroke: c.copyStroke, width: 1.2 });
+    overlays.push({ loops: copy, fill: c.copyFill, stroke: c.copyStroke, width: STROKE_WIDTH.fine });
     if (hits.length) {
       overlays.push({
         loops: hits,
         fill: c.landed,
         stroke: c.landedStroke,
-        width: 1.4,
+        width: STROKE_WIDTH.strong,
       });
     }
     renderer.setOverlays(overlays);

@@ -33,7 +33,7 @@ import {
   type Patch,
   type Tile,
 } from '../engine/index.js';
-import { METATILE } from '../renderer/palette.js';
+import { INK, METATILE, STROKE_WIDTH } from '../renderer/palette.js';
 import { TileRenderer, type Overlay } from '../renderer/renderer.js';
 import { bind } from './scene.js';
 
@@ -127,7 +127,9 @@ export function mountHierarchyScene(
     // The token lets the renderer cache this stage's merged paths, so revisiting
     // a stage costs nothing instead of rebuilding ~7,900 Path2Ds.
     renderer.setColourOverride(
-      (tile) => stage.colourOf.get(tile) ?? '#888',
+      // A tile with no entry has no identity at this depth, which is exactly
+      // what `plain` means.
+      (tile) => stage.colourOf.get(tile) ?? INK[theme()].plain,
       `${theme()}:${i}`,
     );
     // Passing the stage's own overlay object (not a copy) lets the renderer
@@ -200,8 +202,8 @@ function buildStages(patch: Patch, level: number, theme: 'light' | 'dark'): Stag
   const stages: Stage[] = [];
   // Stage 0 needs enough contrast against the surface that individual tiles
   // read as tiles, not as one grey mass.
-  const plain = theme === 'dark' ? '#4a5c68' : '#aab6bf';
-  const hullStroke = theme === 'dark' ? 'rgba(240,239,236,0.85)' : 'rgba(26,26,25,0.8)';
+  const plain = INK[theme].plain;
+  const hullStroke = INK[theme].outline;
 
   // Stage 0 — no grouping at all. Establishes "just one shape, repeated".
   const bare = new Map<Tile, string>();
@@ -236,7 +238,7 @@ function buildStages(patch: Patch, level: number, theme: 'light' | 'dark'): Stag
     stages.push({
       depth,
       colourOf,
-      overlay: { loops, stroke: hullStroke, width: 1.6 },
+      overlay: { loops, stroke: hullStroke, width: STROKE_WIDTH.strong },
       groups: groups.size,
     });
   }
