@@ -327,6 +327,29 @@ if (Buffer.compare(mid, atHat) === 0 || Buffer.compare(mid, atTurtle) === 0) {
 // thing to take on trust — it is the failure that traps somebody.
 console.log('\nscroll-driven scenes:');
 
+// Two widths, because sprint 11 added a second layout — the beats sit beside
+// the figure above 900px — and a check that only ever runs at one width is the
+// exact mistake the screenshot harness made with `--measure`.
+const SCROLL_WIDTHS = [
+  ['phone', 412, 915],
+  ['desktop', 1440, 900],
+];
+
+/**
+ * Minimum share of the canvas width the drawn figure must occupy.
+ *
+ * This exists because "the figure looks small" was true for a whole sprint and
+ * nothing could fail on it. Desktop measured 35% for the continuum and 42% for
+ * the hat before the side-by-side layout; the threshold is set below where they
+ * now sit so ordinary drift is tolerated and a regression of that size is not.
+ */
+const MIN_FILL = 62;
+
+for (const [label, vw, vh] of SCROLL_WIDTHS) {
+await page.setViewportSize({ width: vw, height: vh });
+await page.waitForTimeout(400);
+console.log(`\n  at ${label} — ${vw}×${vh}`);
+
 for (const [name, sliderSel, steps] of [
   ['hat', '[data-step]', 4],
   ['hierarchy', '[data-stage]', 5],
@@ -389,7 +412,35 @@ for (const [name, sliderSel, steps] of [
   if (result.touchAction !== 'pan-y') {
     fail(`${name}: canvas touch-action is "${result.touchAction}" — a swipe on it would trap a phone reader`);
   } else pass(`${name}: a vertical swipe on the canvas still scrolls the page`);
+
+  // How much of its own canvas the figure actually uses. Sampled at 75% through
+  // the travel, where every scene is showing its fullest state.
+  const fill = await page.evaluate(async (name) => {
+    const section = document.querySelector(`[data-scene="${name}"]`);
+    const canvas = section.querySelector('canvas');
+    const { width: W, height: H } = canvas;
+    const data = canvas.getContext('2d').getImageData(0, 0, W, H).data;
+    const [br, bg, bb] = [data[0], data[1], data[2]];
+    let minX = W, maxX = 0;
+    for (let y = 0; y < H; y += 2) {
+      for (let x = 0; x < W; x += 2) {
+        const i = (y * W + x) * 4;
+        if (Math.abs(data[i] - br) + Math.abs(data[i + 1] - bg) + Math.abs(data[i + 2] - bb) > 18) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+        }
+      }
+    }
+    return maxX > minX ? Math.round(((maxX - minX) / W) * 100) : 0;
+  }, name);
+
+  if (fill < MIN_FILL) fail(`${name}: the figure fills only ${fill}% of its canvas width (min ${MIN_FILL}%)`);
+  else pass(`${name}: the figure fills ${fill}% of its canvas width`);
 }
+}
+
+await page.setViewportSize({ width: 412, height: 915 });
+await page.waitForTimeout(300);
 
 // The hands-on scenes must NOT have been converted: they are capped in height
 // and keep their gestures, which is the whole reason they are still hands-on.

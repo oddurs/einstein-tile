@@ -11,6 +11,75 @@
 judgement, and should be treated as such.** The honest position is at the end,
 under *What this sprint cannot do*.
 
+## What shipped — ✅
+
+| ticket | | |
+| --- | --- | --- |
+| T1 | beats beside the figure above 900px | ✅ |
+| T2 | an arrival for the hands-on scenes | ✅ |
+| T3 | the hook asks for the scroll | ✅ |
+| T4 | lead and tail holds | ✅, **not where the plan put it** |
+| T5 | where am I | **not built — it already existed** |
+| T6 | two widths, and a failable fill threshold | ✅ |
+
+### T1 hit its number, and the phone improved as a side effect
+
+Figure width as a share of canvas width:
+
+| | phone, before | phone, after | desktop, before | desktop, after |
+| --- | --- | --- | --- | --- |
+| hat | 88% | 88% | **42%** | **79%** |
+| continuum | 74% | **85%** | **35%** | **76%** |
+
+Two changes got there. The layout: above 900px the figure and beats sit side by
+side, the track bleeds to 1180px through the unused gutters, and the canvas
+becomes 730×648 instead of 950×450 — a box shaped like the thing inside it.
+
+And a second, smaller finding the first one exposed. The continuum fits at t=0
+and must still hold at t=1, so it zooms out to leave the turtle headroom. That
+factor was `0.78`, chosen by guess. Measured across the morph, **the turtle
+reached only 67% of the canvas width and 75% of its height** — a fifth of the
+box was margin nothing ever used. At `0.9` the turtle sits at 77% × 87%, still
+clear of the fit's own 6% padding. That is why the phone improved too, without
+its layout changing at all.
+
+### The desktop column made T5 unnecessary
+
+The beats column had room for one sentence and 800px of void. It now lists
+**every** beat, current one lit and the rest dimmed — so a reader can see how
+many beats the scene has, which one they are on, and what is coming.
+
+That is what T5 was going to build, and it now exists without a second
+mechanism: **desktop gets the beat list, the phone has the slider**, which moves
+under the reader's thumb and already shows position within the scene. Building a
+separate indicator on top of two things that already do the job would have been
+the sprint's worst instinct. Cut.
+
+### T4 was planned in the wrong layer
+
+The plan said *"this is `--beat-travel`-adjacent tuning, in CSS"*. That was
+wrong, and provably so: `p = -top / travel`, and `travel = trackHeight −
+stageHeight`, so **`p = 1` coincides by construction with the stage unpinning**.
+No amount of track height separates them — extra height just makes every beat's
+band longer. The hold has to be in the mapping, so `scroll.ts` grew a `lead` and
+`tail` (5% and 10%; the tail is larger because the last beat carries each
+scene's conclusion).
+
+This is the one place the sprint knowingly departed from *"not in this sprint:
+`scroll.ts` itself"*. That exclusion was about not reworking a mechanism
+measured at 8.3ms; an additive option is a different thing. Re-measured after:
+**8.3ms median, 9.3ms max**, unchanged.
+
+### The threshold, and proving it fails
+
+`MIN_FILL = 62` is asserted at both widths. Set the continuum's zoom to 0.5 and
+it reports *"the figure fills only 49% of its canvas width"* at phone and 43% at
+desktop, and the build goes red. "The figure looks small" was true for a whole
+sprint with nothing able to fail on it; now it is a number.
+
+Page length is **14.9 viewports**, unchanged from sprint 10 — the holds were
+paid for out of the existing travel rather than added to it.
+
 ## Measured before planning
 
 ### Desktop shows a figure in a third of its own canvas

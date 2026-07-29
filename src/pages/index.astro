@@ -39,6 +39,8 @@ const site = `https://oddurs.github.io${base}/`;
     <noscript>
       <style>
         .stage { display: none; }
+        /* Both promise an interaction that does not exist without JS. */
+        .handoff, .cue { display: none; }
         /* Promote every takeaway from a quiet aside to the scene's actual
            prose, since it is now the only thing carrying it. */
         .takeaway {
@@ -64,6 +66,7 @@ const site = `https://oddurs.github.io${base}/`;
           years: a single tile that covers an endless floor without the pattern
           ever repeating. Here is what that means, and why it can’t.
         </p>
+        <p class="cue" aria-hidden="true"><span>Scroll</span></p>
       </header>
 
       <!-- Scene 2 — meet the hat -->
@@ -122,7 +125,7 @@ const site = `https://oddurs.github.io${base}/`;
       </section>
 
       <!-- Scene 3 — try to make it repeat -->
-      <section class="scene" data-scene="repeat" aria-labelledby="h-repeat">
+      <section class="scene" data-scene="repeat" data-hands-on aria-labelledby="h-repeat">
         <div class="prose">
           <h2 id="h-repeat">What “repeats” actually means</h2>
           <p>
@@ -137,6 +140,8 @@ const site = `https://oddurs.github.io${base}/`;
             hat.
           </p>
         </div>
+
+        <p class="handoff">Your turn</p>
 
         <figure class="stage">
           <canvas
@@ -169,7 +174,7 @@ const site = `https://oddurs.github.io${base}/`;
       </section>
 
       <!-- Scene 4 — order is not randomness -->
-      <section class="scene" data-scene="recurrence" aria-labelledby="h-recur">
+      <section class="scene" data-scene="recurrence" data-hands-on aria-labelledby="h-recur">
         <div class="prose">
           <h2 id="h-recur">But it isn’t random</h2>
           <p>
@@ -182,6 +187,8 @@ const site = `https://oddurs.github.io${base}/`;
             patch of the tiling.
           </p>
         </div>
+
+        <p class="handoff">Your turn</p>
 
         <figure class="stage">
           <canvas
@@ -398,6 +405,18 @@ const site = `https://oddurs.github.io${base}/`;
         hierarchy: scrollDriven(mountHierarchyScene, '[data-stage]', 5),
         continuum: scrollDriven(mountContinuumScene, '[data-morph]'),
       });
+
+      // The cue has one job and stops the moment it is done. Asking twice is
+      // nagging, and a reader who has scrolled has already answered.
+      const cue = document.querySelector('.cue');
+      if (cue) {
+        const answered = () => {
+          if (window.scrollY < window.innerHeight * 0.35) return;
+          cue.classList.add('is-answered');
+          removeEventListener('scroll', answered);
+        };
+        addEventListener('scroll', answered, { passive: true });
+      }
     </script>
 
     <style is:global set:html={rootCSS(base)}></style>
@@ -666,6 +685,79 @@ const site = `https://oddurs.github.io${base}/`;
 
       [data-scroll] .beat.is-current { opacity: 1; }
 
+      /* ---- Desktop: the beats beside the figure ----------------------------
+         Sprint 10 built the mechanism once, for a narrow column, and then used
+         it at every width. Measured, that meant the continuum figure filled
+         **35% of its canvas width** at 1440 and the hat 42%: the canvas was
+         950×450 — 2.1:1 — and the tiling it draws is square, so two thirds of
+         the box was background. The phone was fine at 74–88%, because the phone
+         is what the stacked layout was designed for.
+
+         Side by side fixes both halves at once. The figure gets a box shaped
+         like the thing inside it, and the beats stop being something you scroll
+         *to* and become something you read *beside* it.
+
+         The breakpoint is 900px because that is where two columns still leave
+         the beats a comfortable measure — below it, stacked is genuinely
+         better, which is why the phone layout is untouched. */
+      @media (min-width: 900px) {
+        [data-scroll] .scroll-track {
+          /* Bleed into the gutters the article was leaving unused: 224px a side
+             at 1440, 464px at 1920. A figure is not prose and has no measure to
+             respect. Done with margins rather than a transform, because a
+             transformed ancestor is a classic way to break `position: sticky`. */
+          --bleed: min(1180px, calc(100vw - 5rem));
+          width: var(--bleed);
+          margin-inline-start: calc((100% - var(--bleed)) / 2);
+
+          /* The figure is now tall enough to be worth pinning higher. */
+          --pin: 72dvh;
+
+          display: grid;
+          grid-template-columns: minmax(0, 1.45fr) minmax(17rem, 0.8fr);
+          /* One row that fills the track, so both sticky children have a tall
+             containing block to travel inside. */
+          grid-template-rows: 1fr;
+          column-gap: 2.75rem;
+          align-items: start;
+        }
+
+        [data-scroll] .stage {
+          grid-area: 1 / 1;
+        }
+
+        [data-scroll] .stage canvas {
+          max-height: 760px;
+        }
+
+        /* On a phone the beats cross-fade in one place, because there is only
+           room for one. A desktop column has room for all of them, so it shows
+           all of them: the current one lit, the rest dimmed but legible.
+
+           This is worth more than the space it fills. A reader can see how many
+           beats the scene has, which one they are on, and what is coming — so
+           the scene has a visible shape instead of being an unknown length of
+           scrolling. It is also, for free, most of what a progress indicator
+           was going to be. */
+        [data-scroll] .beats {
+          grid-area: 1 / 2;
+          display: flex;
+          flex-direction: column;
+          gap: 1.1rem;
+          /* Roughly centred against a 72dvh figure pinned at 3dvh. */
+          top: calc(3dvh + 7rem);
+          min-height: 0;
+          max-width: none;
+        }
+
+        [data-scroll] .beat {
+          opacity: 0.26;
+          transition: opacity 240ms ease;
+        }
+
+        [data-scroll] .beat.is-current { opacity: 1; }
+      }
+
       /* Nothing above is allowed to depend on motion. Without it the figure is
          an ordinary stage with an ordinary slider, and the beats are an
          ordinary list of sentences — the argument arrives intact, just still. */
@@ -678,6 +770,90 @@ const site = `https://oddurs.github.io${base}/`;
           margin-bottom: 0.9rem;
           opacity: 1;
         }
+      }
+
+      /* The piece is 14.8 viewports and asks for sustained scrolling almost
+         immediately. The hook is the only place a reader decides whether to
+         go, and it was making no case at all — so it asks, once, quietly, and
+         then gets out of the way the moment the reader has answered. */
+      .cue {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin: 2.6rem 0 0;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: var(--type-fine);
+        font-weight: 500;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--muted);
+        transition: opacity 400ms ease;
+      }
+
+      /* A short rule that slides down and back, the length of one polite
+         suggestion. */
+      .cue::after {
+        content: '';
+        width: 2.5rem;
+        height: 1px;
+        background: currentColor;
+        transform-origin: left;
+        animation: cue-slide 2.4s ease-in-out infinite;
+      }
+
+      @keyframes cue-slide {
+        0%, 100% { transform: scaleX(0.4); opacity: 0.5; }
+        50% { transform: scaleX(1); opacity: 1; }
+      }
+
+      .cue.is-answered { opacity: 0; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .cue::after { animation: none; }
+      }
+
+      /* ---- The seam between the two modes ---------------------------------
+         Three scenes now pin their figure for ~3 viewports and take no touch
+         at all. Then `repeat` arrives, where the figure scrolls away like an
+         ordinary image and expects to be dragged. Nothing announced that, and
+         **a change of mode with no signal reads as a bug** — especially
+         landing straight after three scenes that taught the opposite rules.
+
+         So the hands-on scenes get an arrival: a marked handoff, and a stage
+         that looks like an object rather than a figure. Not a modal, not a
+         gate — a reader who keeps scrolling past without touching anything
+         still gets the whole argument, exactly as before. */
+      .handoff {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        margin: 2.4rem 0 0;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: var(--type-fine);
+        font-weight: 500;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      /* A rule running off to the right: the piece stops and hands over. */
+      .handoff::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          color-mix(in oklab, var(--accent) 45%, transparent),
+          transparent
+        );
+      }
+
+      /* The stage stops being a figure you look at and becomes a thing you
+         touch: it sits on its own surface rather than the page's. */
+      [data-hands-on] .stage {
+        margin-top: 1rem;
+        border-color: color-mix(in oklab, var(--accent) 26%, var(--line));
+        background: color-mix(in oklab, var(--accent) 4%, var(--bg));
       }
 
       /* Landscape phones: a 62dvh canvas plus a HUD is taller than the whole

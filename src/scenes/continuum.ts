@@ -116,8 +116,17 @@ export function mountContinuumScene(root: HTMLElement): () => void {
     const deformed = deform(tiles, A_AT(t), B_AT(t));
     renderer.setFigures(figuresFor(deformed), !fitted);
     if (!fitted) {
-      // Leave headroom for the turtle, which is the bigger of the two ends.
-      renderer.zoomTo(renderer.getView().scale * 0.78);
+      /**
+       * Headroom for the turtle, which is the bigger of the two ends — the fit
+       * happens at t=0 and must still hold at t=1.
+       *
+       * 0.78 was a guess and too cautious. Measured across the morph, the
+       * turtle reached only 67% of the canvas width and 75% of its height, so
+       * a fifth of the box was margin that nothing ever used. 0.9 puts the
+       * turtle at roughly 77% × 87% — filling the frame while keeping a margin
+       * wider than the fit's own 6% padding.
+       */
+      renderer.zoomTo(renderer.getView().scale * 0.9);
       fitted = true;
     }
     caption.textContent =

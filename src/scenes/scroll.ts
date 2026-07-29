@@ -50,6 +50,21 @@ export interface ScrollDriveOptions {
    * Purely presentational — the argument must survive with none of them lit.
    */
   readonly beats?: readonly HTMLElement[];
+  /**
+   * Fractions of the travel spent held at 0 and at 1.
+   *
+   * Without these the figure reaches its final state at exactly the moment its
+   * track ends, so the last beat — which is the one carrying each scene's
+   * conclusion — appears and unpins in the same instant. The tail is the larger
+   * of the two for that reason.
+   *
+   * Sprint 11 planned this as CSS tuning, which was wrong about where it lives:
+   * `p` is `-top / travel`, so `p = 1` coincides *by construction* with the
+   * stage unpinning, and no amount of track height separates them. It has to be
+   * in the mapping.
+   */
+  readonly lead?: number;
+  readonly tail?: number;
 }
 
 /**
@@ -61,7 +76,8 @@ export interface ScrollDriveOptions {
 const EPSILON = 0.0005;
 
 export function scrollDrive(opts: ScrollDriveOptions): () => void {
-  const { track, stage, onProgress, beats = [] } = opts;
+  const { track, stage, onProgress, beats = [], lead = 0.05, tail = 0.1 } = opts;
+  const span = 1 - lead - tail;
 
   let frame = 0;
   let last = -1;
@@ -75,7 +91,10 @@ export function scrollDrive(opts: ScrollDriveOptions): () => void {
     const travel = rect.height - stage.getBoundingClientRect().height;
     if (travel <= 0) return;
 
-    const p = Math.min(1, Math.max(0, -rect.top / travel));
+    const raw = -rect.top / travel;
+    // Hold at each end, so the figure settles before the first beat and the
+    // conclusion stays up after the last.
+    const p = Math.min(1, Math.max(0, (raw - lead) / span));
     if (Math.abs(p - last) < EPSILON) return;
     last = p;
 
