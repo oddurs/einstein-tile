@@ -120,6 +120,31 @@ describe('ink roles', () => {
       );
     });
 
+    /**
+     * `repeat` lays a copy of the floor over the floor, and a reader reported
+     * it as looking buggy: the two read as one smudged mass.
+     *
+     * The obvious suspect was the outline, and the obvious suspect was wrong —
+     * the old outline passes this file's contrast gate comfortably. **The fill
+     * was the problem.** At 22% alpha the copy became a second solid area
+     * competing with the floor for the same reading, and no amount of outline
+     * rescues that.
+     *
+     * So the assertion is the design, stated: the copy is *tracing paper*. Its
+     * fill is a whisper and its outline carries it. The alpha bound is the half
+     * that would have caught the bug.
+     */
+    it(`the copy stays outline-forward (${theme})`, () => {
+      const alpha = Number(INK[theme].ghost.match(/,\s*([\d.]+)\s*\)$/)![1]);
+      expect(
+        alpha,
+        'the copy must read as an overlay, not as a second floor — keep the fill a whisper',
+      ).toBeLessThanOrEqual(0.12);
+
+      const floor = INK[theme].plain;
+      expect(contrast(over(INK[theme].ghostLine, floor), floor)).toBeGreaterThanOrEqual(2.5);
+    });
+
     it(`outline reads against every metatile fill (${theme})`, () => {
       for (const [label, fill] of Object.entries(METATILE[theme])) {
         expect(contrast(over(INK[theme].outline, fill), fill), label).toBeGreaterThanOrEqual(2);

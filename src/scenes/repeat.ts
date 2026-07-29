@@ -190,7 +190,14 @@ export function mountRepeatScene(root: HTMLElement): () => void {
       (landed.has(i) ? hits : copy).push(shifted(piece));
     }
 
-    overlays.push({ loops: copy, fill: c.copyFill, stroke: c.copyStroke, width: STROKE_WIDTH.fine });
+        // The copy is tracing paper: outline-forward, so the floor stays visible
+    // through it and the thing you line up is the edges.
+    overlays.push({
+      loops: copy,
+      fill: c.copyFill,
+      stroke: c.copyStroke,
+      width: STROKE_WIDTH.strong,
+    });
     if (hits.length) {
       overlays.push({
         loops: hits,

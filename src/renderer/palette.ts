@@ -137,6 +137,16 @@ export const ORIENTATION_ACCESSIBLE = {
  *
  * So: two roles, stated, instead of four accidents.
  *
+ * `ghost` and `ghostLine` are deliberately **outline-forward**. They began as a
+ * 22%-alpha wash, which measured 1.35 contrast against the tile it covered in
+ * dark mode and 1.17 in light — invisible, so a reader saw one smudged mass
+ * rather than a floor with a copy laid over it, and reported the scene as
+ * looking buggy. A copy of a floor being slid over a floor is **tracing paper**:
+ * you see through it, and what you line up is the outlines. Making the fill a
+ * whisper and the line assertive says that, and it makes the scene's actual
+ * lesson visible for free — a tile that landed is solid, a tile that missed is
+ * only an outline.
+ *
  * `outline` replaces four hand-matched strokes (`hatLine`, `landedStroke`,
  * `echoLine`, `pickLine`) that had already converged — three of the four were
  * `rgba(10,45,80,·)` at different alphas — without anyone noticing they had.
@@ -147,8 +157,8 @@ export const INK = {
     plain: '#b9c3cc',
     grid: 'rgba(26,26,25,0.22)',
     guide: 'rgba(26,26,25,0.32)',
-    ghost: 'rgba(70,130,190,0.20)',
-    ghostLine: 'rgba(45,95,150,0.62)',
+    ghost: 'rgba(70,130,190,0.10)',
+    ghostLine: 'rgba(16,72,140,0.95)',
     outline: 'rgba(12,30,52,0.72)',
   },
   dark: {
@@ -156,8 +166,8 @@ export const INK = {
     plain: '#46525e',
     grid: 'rgba(240,239,236,0.30)',
     guide: 'rgba(240,239,236,0.42)',
-    ghost: 'rgba(120,175,225,0.22)',
-    ghostLine: 'rgba(150,195,240,0.75)',
+    ghost: 'rgba(120,175,225,0.10)',
+    ghostLine: 'rgba(170,212,255,0.98)',
     outline: 'rgba(240,248,255,0.88)',
   },
 } as const;
