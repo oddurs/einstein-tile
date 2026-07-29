@@ -34,6 +34,7 @@ import {
 } from '../engine/index.js';
 import { makePalette, SURFACE, TILE_STROKE } from '../renderer/palette.js';
 import { TileRenderer } from '../renderer/renderer.js';
+import { bindKeys } from './keys.js';
 import { bind } from './scene.js';
 
 export interface Design {
@@ -46,6 +47,28 @@ export interface Design {
 }
 
 const DEFAULT: Design = { level: 3, shape: 0, scheme: 'metatile', dark: false };
+
+/**
+ * The opening design, with dark taken from the reader rather than assumed.
+ *
+ * `dark` used to default to `false` unconditionally, so a phone in dark mode
+ * opened the sandbox on a **glaring white canvas inside a dark page** — which
+ * reads as broken before it reads as a choice. It stays a real control, because
+ * the tiling is a picture someone may print on white paper, but its *initial*
+ * value should agree with the page it is sitting in.
+ *
+ * A design carried in the URL always wins: that was somebody's deliberate
+ * choice, and it is the thing a shared link is for.
+ */
+const openingDesign = (raw: string | null): Design => {
+  if (raw) return decode(raw);
+  return {
+    ...DEFAULT,
+    dark:
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches,
+  };
+};
 
 /**
  * Depth stops at 4 — 7,921 tiles.
@@ -214,10 +237,16 @@ export function mountMake(root: HTMLElement): () => void {
   const shareButton = el.shareButton as HTMLButtonElement;
 
 
-  let design = decode(new URLSearchParams(location.search).get('d'));
+  let design = openingDesign(new URLSearchParams(location.search).get('d'));
   // Tighter than the default 6%: this is a picture someone may post or print,
   // so it should fill its frame rather than float in it.
-  const renderer = new TileRenderer(canvas, { dark: design.dark, padding: 0.02 });
+  // The sandbox frames one picture and never drives the view itself, so it is
+  // the one place a resize should simply re-fit — see `refitOnResize`.
+  const renderer = new TileRenderer(canvas, {
+    dark: design.dark,
+    padding: 0.02,
+    refitOnResize: true,
+  });
 
   // One radio per scheme, built from the list so the two cannot drift apart.
   const buttons = SCHEMES.map((scheme) => {
@@ -331,7 +360,17 @@ export function mountMake(root: HTMLElement): () => void {
   sync();
   draw();
 
+  /**
+   * Arrows pan, +/- zoom. The sandbox's whole point is looking closely at a
+   * tiling you made, and until now that required a pointer.
+   */
+  const detachKeys = bindKeys(canvas, {
+    onStep: (dx, dy) => renderer.panBy(-dx * 48, -dy * 48),
+    onZoom: (factor) => renderer.zoomTo(renderer.getView().scale * factor),
+  });
+
   return () => {
+    detachKeys();
     levelInput.removeEventListener('input', onLevel);
     shapeInput.removeEventListener('input', onShape);
     darkToggle.removeEventListener('change', onDark);

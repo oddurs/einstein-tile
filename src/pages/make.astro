@@ -38,14 +38,15 @@ const site = `https://oddurs.github.io${base}/`;
       <figure class="stage">
         <canvas
           data-canvas
+          tabindex="0"
           role="img"
-          aria-label="Your tiling. Its size, colouring and tile shape follow the controls below."
+          aria-label="Your tiling. Drag or use the arrow keys to move it; pinch or press plus and minus to zoom."
         ></canvas>
       </figure>
 
       <div class="controls">
         <div class="row">
-          <label for="level">how much</label>
+          <label for="level">tiles</label>
           <input id="level" data-level type="range" />
         </div>
 
@@ -64,6 +65,11 @@ const site = `https://oddurs.github.io${base}/`;
             dark
           </label>
         </div>
+
+        <p class="gesture">
+          Drag the tiling to move it, pinch or scroll to zoom — or focus it and
+          use the arrow keys and <kbd>+</kbd>&thinsp;/&thinsp;<kbd>−</kbd>.
+        </p>
 
         <div class="row actions">
           <button data-svg type="button">Download SVG</button>
@@ -158,6 +164,17 @@ const site = `https://oddurs.github.io${base}/`;
         max-height: 620px;
         touch-action: none;
       }
+      /* Desktop measured 830×522 — landscape, holding a square tiling — so the
+         figure filled 61% of the width it was given. Same defect sprint 11
+         found on the piece; /make/ was not in that sprint's scope. Above the
+         phone width the canvas gets to be tall enough to be roughly square. */
+      @media (min-width: 900px) {
+        .stage canvas {
+          height: 78dvh;
+          max-height: 780px;
+        }
+      }
+
       @media (max-height: 560px) {
         .stage canvas { height: 46dvh; }
       }
@@ -210,6 +227,29 @@ const site = `https://oddurs.github.io${base}/`;
         gap: 7px;
       }
       .dark input { width: 20px; height: 20px; }
+
+      /* The canvas claimed every touch gesture and told nobody: 53 words on the
+         page and not one of them was "drag", "pinch" or "zoom". */
+      .gesture {
+        margin: 0.2rem 0 0.1rem;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+
+      .gesture kbd {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11.5px;
+        padding: 0.5px 4px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+      }
+
+      .stage canvas:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -3px;
+      }
 
       .actions { gap: 8px; }
       .actions button { flex: 0 0 auto; }

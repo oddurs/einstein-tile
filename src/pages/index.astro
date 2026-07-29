@@ -876,6 +876,44 @@ const site = `https://oddurs.github.io${base}/`;
         background: color-mix(in oklab, var(--accent) 4%, var(--bg));
       }
 
+      /* The hands-on stages have the same landscape-canvas defect the scroll
+         scenes had before sprint 11 and /make/ had before sprint 13: at desktop
+         the canvas is 950×558 and the tiling is square, so the figure filled
+         52% (repeat) and 53% (recurrence) of the width it was given.
+
+         Only the height moves, and only above the phone width. The 62dvh cap
+         exists because these canvases keep `touch-action: none` and a tall one
+         swallows a phone reader's swipe; 68dvh still leaves a third of the
+         viewport as ordinary page to scroll with, and the trap test holds it
+         to that. */
+      /* At desktop the HUD moves beside the figure rather than under it — the
+         same layout the landscape-phone rule below already uses, and the same
+         move sprint 11 made for the scroll scenes. It is not decoration: a
+         950px-wide canvas holding a square tiling let the figure fill only 52%
+         of its width. Narrowing the canvas is what fixes that, and the panel
+         has to go somewhere. */
+      @media (min-width: 900px) {
+        [data-hands-on] .stage {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(17rem, 22rem);
+        }
+        [data-hands-on] .stage canvas {
+          height: 66dvh;
+          max-height: 680px;
+        }
+        [data-hands-on] .hud {
+          border-top: none;
+          border-left: 1px solid var(--line);
+          overflow-y: auto;
+        }
+        /* In a side panel the buttons have a column, not a row — side by side
+           they wrap mid-phrase ("Try another / slide"). */
+        [data-hands-on] .hud-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+
       /* Landscape phones: a 62dvh canvas plus a HUD is taller than the whole
          viewport, which traps the reader — the canvas owns touch, so with no
          prose visible there is nothing left to scroll with. Landscape is also

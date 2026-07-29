@@ -35,6 +35,7 @@ import {
 import { INK, METATILE, STROKE_WIDTH } from '../renderer/palette.js';
 import { TileRenderer, type Overlay } from '../renderer/renderer.js';
 import { bind } from './scene.js';
+import { bindKeys } from './keys.js';
 
 /**
  * Deliberately not the biggest patch available.
@@ -167,9 +168,49 @@ export function mountRecurrenceScene(root: HTMLElement): () => void {
   // patch at a time. The scene's point must not be pointer-only.
   let cursor = Math.floor(pieces.length / 2);
   const onPick = () => {
+    // 137 is coprime with any patch size we build, so repeated presses walk the
+    // whole patch instead of cycling a short orbit.
     cursor = (cursor + 137) % pieces.length;
     choose(cursor);
   };
+
+  /**
+   * Move the selection to a neighbouring patch.
+   *
+   * Stepping by 1 through the piece array would jump around the plane, because
+   * that order is the substitution's, not space's. So a key step moves to the
+   * nearest piece in the direction pressed — which is what "move the selection"
+   * means to someone looking at it.
+   */
+  const stepSeed = (dx: number, dy: number) => {
+    const from = centres[cursor];
+    if (!from) return;
+    let best = -1;
+    let bestScore = Infinity;
+    for (const [i, c] of centres.entries()) {
+      if (i === cursor) continue;
+      const ox = c.x - from.x;
+      const oy = from.y - c.y; // screen y grows downward; world y does not
+      const along = ox * dx + oy * dy;
+      if (along <= 0) continue;
+      const across = Math.abs(ox * dy - oy * dx);
+      const score = across * 3 + along;
+      if (score < bestScore) {
+        bestScore = score;
+        best = i;
+      }
+    }
+    if (best < 0) return;
+    cursor = best;
+    choose(cursor);
+  };
+  // Arrows move the selection to the neighbouring patch in that direction;
+  // Enter is the same "pick another" the button offers.
+  const detachKeys = bindKeys(canvas, {
+    onStep: stepSeed,
+    onCommit: onPick,
+  });
+
   pick.addEventListener('click', onPick);
 
   renderer.onTap = (world) => {
@@ -207,6 +248,7 @@ export function mountRecurrenceScene(root: HTMLElement): () => void {
   draw();
 
   return () => {
+    detachKeys();
     pick.removeEventListener('click', onPick);
     media.removeEventListener('change', onTheme);
     renderer.destroy();

@@ -442,6 +442,86 @@ for (const [name, sliderSel, steps] of [
 await page.setViewportSize({ width: 412, height: 915 });
 await page.waitForTimeout(300);
 
+// ── the playgrounds are operable without a pointer ─────────────────────────
+// `repeat` and `recurrence` set tabindex="0" on their canvases and handled no
+// keys at all: a keyboard user tabbed in, got a focus ring, and nothing
+// happened. **Focusable with no key handling is worse than not focusable** — it
+// advertises an interaction it does not have. So the rule is now binary, and
+// this is where it is enforced: operable, or not focusable. No third state.
+console.log('\nkeyboard:');
+
+for (const [name, keys] of [
+  ['repeat', ['ArrowRight', 'ArrowRight']],
+  ['recurrence', ['ArrowRight', 'Enter']],
+]) {
+  const result = await page.evaluate(
+    async ({ name, keys }) => {
+      const section = document.querySelector(`[data-scene="${name}"]`);
+      const canvas = section.querySelector('canvas');
+      canvas.scrollIntoView({ block: 'center', behavior: 'instant' });
+      await new Promise((r) => setTimeout(r, 350));
+      const state = () => {
+        const ctx = canvas.getContext('2d');
+        const px = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let hash = 0;
+        for (let i = 0; i < px.length; i += 401) hash = (hash * 31 + px[i]) | 0;
+        const read = section.querySelector('[data-readout], [data-meter]');
+        return `${hash}|${(read?.textContent ?? '').trim()}`;
+      };
+      const before = state();
+      canvas.focus();
+      const focused = document.activeElement === canvas;
+      for (const key of keys) {
+        canvas.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+        await new Promise((r) => setTimeout(r, 200));
+      }
+      await new Promise((r) => setTimeout(r, 250));
+      return { focusable: canvas.tabIndex >= 0, focused, changed: state() !== before };
+    },
+    { name, keys },
+  );
+
+  if (!result.focusable) {
+    pass(`${name}: canvas is not focusable, so it promises nothing`);
+  } else if (!result.focused) {
+    fail(`${name}: canvas has tabindex but will not take focus`);
+  } else if (!result.changed) {
+    fail(`${name}: canvas is focusable but the keyboard does nothing — it advertises an interaction it does not have`);
+  } else {
+    pass(`${name}: operable from the keyboard`);
+  }
+}
+
+// The hands-on scenes were never held to the fill threshold either — they were
+// not in sprint 11's scope, and measured 52% and 53% of their canvas width at
+// desktop for exactly the same reason /make/ did.
+for (const name of ['repeat', 'recurrence']) {
+  const fill = await page.evaluate(async (n) => {
+    const section = document.querySelector(`[data-scene="${n}"]`);
+    section.querySelector('.stage').scrollIntoView({ block: 'center', behavior: 'instant' });
+    await new Promise((r) => setTimeout(r, 450));
+    const c = section.querySelector('canvas');
+    const { width: W, height: H } = c;
+    const d = c.getContext('2d').getImageData(0, 0, W, H).data;
+    const [br, bg, bb] = [d[0], d[1], d[2]];
+    let minX = W, maxX = 0, minY = H, maxY = 0;
+    for (let y = 0; y < H; y += 2) {
+      for (let x = 0; x < W; x += 2) {
+        const i = (y * W + x) * 4;
+        if (Math.abs(d[i] - br) + Math.abs(d[i + 1] - bg) + Math.abs(d[i + 2] - bb) > 18) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    return Math.max(((maxX - minX) / W) * 100, ((maxY - minY) / H) * 100);
+  }, name);
+  if (fill < 80) fail(`${name}: the figure fills only ${Math.round(fill)}% of its canvas`);
+  else pass(`${name}: the figure fills ${Math.round(fill)}% of its canvas`);
+}
+
 // The hands-on scenes must NOT have been converted: they are capped in height
 // and keep their gestures, which is the whole reason they are still hands-on.
 for (const name of ['repeat', 'recurrence']) {
@@ -537,6 +617,12 @@ await plain.close();
 // Not part of the piece, but it is the one thing a reader leaves with, and a
 // share link that does not reopen the right tiling is worse than no link.
 console.log('\nmake:');
+// Everything below the functional tests is here because it was NOT here. The
+// piece got budget, a11y, fill and trap assertions; `/make/` got "does it
+// render" and nothing else — so a green run said nothing about half the
+// interactive surface. **A check that runs on one page is lying about the
+// others**, and the fact that `/make/` turned out to pass anyway is luck, not
+// evidence.
 const make = await context.newPage();
 const makeProblems = [];
 make.on('console', (m) => m.type() === 'error' && makeProblems.push(`console: ${m.text()}`));
@@ -586,6 +672,153 @@ await make.locator('[data-svg]').click();
 const file = await download;
 if (!file) fail('SVG export produced no download');
 else pass(`exports SVG (${file.suggestedFilename()})`);
+
+// Accessible names, computed by the browser rather than by guessing at label
+// wiring — the first hand-rolled version of this check reported a false
+// positive on a checkbox that was correctly labelled by a wrapping <label>.
+{
+  const yaml = await make.locator('body').ariaSnapshot();
+  const controls = yaml
+    .split('\n')
+    .map((line) => line.trim().replace(/^- /, ''))
+    .filter((line) => /^(checkbox|slider|button|textbox|combobox|link|radio|switch)\b/.test(line));
+  const unnamed = controls.filter((line) => !/["\u201c]/.test(line));
+  if (!controls.length) fail('no controls found on /make/ — the snapshot is not seeing the page');
+  else if (unnamed.length) fail(`/make/: ${unnamed.length} control(s) with no accessible name: ${unnamed.join(', ')}`);
+  else pass(`every control on /make/ has an accessible name (${controls.length})`);
+}
+
+// The same fill threshold the piece is held to. /make/ measured 61% at desktop
+// — a landscape canvas holding a square tiling, the exact defect sprint 11
+// fixed on the piece while /make/ sat outside its scope.
+{
+  // A fresh page at the default design. By this point `make` has had its
+  // level, shape and scheme driven all over by the URL round-trip test, and
+  // measuring that tells us about a state no reader arrives in.
+  const fresh = await context.newPage();
+  await fresh.setViewportSize({ width: 1440, height: 900 });
+  await fresh.goto(`http://localhost:${PORT}${BASE}/make/`, { waitUntil: 'networkidle' });
+  await fresh.waitForTimeout(800);
+  const fill = await fresh.evaluate(() => {
+    const c = document.querySelector('canvas');
+    const { width: W, height: H } = c;
+    const d = c.getContext('2d').getImageData(0, 0, W, H).data;
+    const [br, bg, bb] = [d[0], d[1], d[2]];
+    let minX = W, maxX = 0;
+    for (let y = 0; y < H; y += 2) {
+      for (let x = 0; x < W; x += 2) {
+        const i = (y * W + x) * 4;
+        if (Math.abs(d[i] - br) + Math.abs(d[i + 1] - bg) + Math.abs(d[i + 2] - bb) > 18) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+        }
+      }
+    }
+    return maxX > minX ? Math.round(((maxX - minX) / W) * 100) : 0;
+  });
+  if (fill < MIN_FILL) fail(`/make/: the tiling fills only ${fill}% of its canvas width (min ${MIN_FILL}%)`);
+  else pass(`/make/: the tiling fills ${fill}% of its canvas width`);
+  await fresh.close();
+}
+
+// The trap test, on the page it never ran on. /make/'s canvas takes
+// `touch-action: none` on a page barely taller than the viewport, which is
+// exactly the geometry that strands a phone reader.
+{
+  const phone = await context.newPage();
+  await phone.setViewportSize({ width: 412, height: 915 });
+  await phone.goto(`http://localhost:${PORT}${BASE}/make/`, { waitUntil: 'networkidle' });
+  await phone.waitForTimeout(600);
+  const room = await phone.evaluate(() => {
+    const c = document.querySelector('canvas').getBoundingClientRect();
+    return {
+      touchAction: getComputedStyle(document.querySelector('canvas')).touchAction,
+      canvas: Math.round(c.height),
+      viewport: window.innerHeight,
+      page: document.documentElement.scrollHeight,
+    };
+  });
+  const share = room.canvas / room.viewport;
+  if (room.touchAction === 'none' && share > 0.8) {
+    fail(`/make/: the canvas owns touch and covers ${Math.round(share * 100)}% of the viewport — nothing left to scroll with`);
+  } else {
+    pass(`/make/: ${Math.round(share * 100)}% of the viewport, leaving page to scroll with`);
+  }
+  await phone.close();
+}
+
+// Operable without a pointer, like the scenes in the piece.
+{
+  const result = await make.evaluate(async () => {
+    const c = document.querySelector('canvas');
+    const state = () => {
+      const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      let hash = 0;
+      for (let i = 0; i < px.length; i += 401) hash = (hash * 31 + px[i]) | 0;
+      return hash;
+    };
+    const before = state();
+    c.focus();
+    const focused = document.activeElement === c;
+    for (const key of ['ArrowRight', 'ArrowRight', '+']) {
+      c.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    await new Promise((r) => setTimeout(r, 250));
+    return { focusable: c.tabIndex >= 0, focused, changed: state() !== before };
+  });
+  if (!result.focusable) pass('/make/: canvas is not focusable, so it promises nothing');
+  else if (!result.changed) fail('/make/: canvas is focusable but the keyboard does nothing');
+  else pass('/make/: operable from the keyboard');
+}
+
+// A resize must re-frame the picture. The canvas resizes and the view did not,
+// so a tiling filling 96% of the width in portrait fell to 44% after a
+// rotation and stayed there — a phone turned sideways left the reader looking
+// at a small tiling in a large box. Asserted on the dimension that should be
+// full: fitting a square into a landscape box is height-limited, and into a
+// portrait box is width-limited, so *one* of them must be near full either way.
+{
+  const rotate = await context.newPage();
+  await rotate.setViewportSize({ width: 412, height: 915 });
+  await rotate.goto(`http://localhost:${PORT}${BASE}/make/`, { waitUntil: 'networkidle' });
+  await rotate.waitForTimeout(700);
+  const extent = () =>
+    rotate.evaluate(() => {
+      const c = document.querySelector('canvas');
+      const { width: W, height: H } = c;
+      const d = c.getContext('2d').getImageData(0, 0, W, H).data;
+      const [br, bg, bb] = [d[0], d[1], d[2]];
+      let minX = W, maxX = 0, minY = H, maxY = 0;
+      for (let y = 0; y < H; y += 2) {
+        for (let x = 0; x < W; x += 2) {
+          const i = (y * W + x) * 4;
+          if (Math.abs(d[i] - br) + Math.abs(d[i + 1] - bg) + Math.abs(d[i + 2] - bb) > 18) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+      return Math.max(((maxX - minX) / W) * 100, ((maxY - minY) / H) * 100);
+    });
+  const before = await extent();
+  await rotate.setViewportSize({ width: 1024, height: 768 });
+  await rotate.waitForTimeout(700);
+  const after = await extent();
+  if (after < 80) fail(`/make/: after a rotation the tiling fills only ${Math.round(after)}% of its box — the view did not re-fit`);
+  else pass(`/make/: re-fits on rotation (${Math.round(before)}% → ${Math.round(after)}%)`);
+  await rotate.close();
+}
+
+// It claims every touch gesture, so it has to say so somewhere.
+{
+  const tells = await make.evaluate(() => /drag|pinch|zoom|arrow/i.test(document.body.innerText));
+  if (!tells) fail('/make/: the canvas owns drag and pinch and the page never mentions either');
+  else pass('/make/: the page says what the canvas can do');
+}
+
 await make.close();
 
 await browser.close();

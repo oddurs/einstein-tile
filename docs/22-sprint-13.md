@@ -12,6 +12,86 @@
 sprint. The rest are the ordinary unevenness of a surface that has never been
 looked at on purpose — `/make/` has had no sprint of its own, ever.
 
+## What shipped — ✅
+
+| ticket | | |
+| --- | --- | --- |
+| P1 | a keyboard path into every playground | ✅ |
+| P2 | extend the checks to `/make/` | ✅ |
+| P3 | tell people what the sandbox does | ✅ |
+| P4 | the sandbox figure filling its canvas | ✅ **61% → 83%** |
+| P5 | `recurrence` should say what it found | **already did — see below** |
+| P6 | look at all three defaults | ✅ **found two more bugs** |
+
+### Two of this plan's findings were false, and my probe was why
+
+**`/make/` does not have an unnamed control.** The dark toggle is wrapped in
+`<label class="dark">…dark</label>` — an implicit label — and the browser
+computes its name correctly. My probe only looked at `label[for=]` and
+`textContent`, so it invented the defect. Real count: **zero unnamed controls on
+either page.** The check now uses Playwright's `ariaSnapshot`, i.e. the
+browser's own name computation, rather than my guess at label wiring.
+
+**`recurrence` does report a count** — *"20 more copies in view"*. My probe read
+`[data-meter]`; that scene uses `[data-readout]`. P5 was answering a question
+nobody had.
+
+Both errors came from one hand-rolled probe that guessed at selectors and at
+name resolution. **A measurement is only evidence if the instrument is
+checked**, and mine was not — which is the same lesson as every harness bug in
+this project, arriving from the other direction.
+
+The half of P2 that survives is the real half: the a11y, fill and trap checks
+only ever ran on the piece. `/make/` passing them anyway was luck, not evidence.
+
+### P1 was exactly as bad as it looked
+
+| | before | after |
+| --- | --- | --- |
+| repeat | focusable, no key handling | arrows walk the 31 candidate slides |
+| recurrence | focusable, no key handling | arrows move the selection, Enter picks |
+| /make/ | not focusable, pointer-only | focusable; arrows pan, `+`/`-` zoom |
+
+One vocabulary across all three, the way `docs/06` fixes the gesture vocabulary:
+**arrows move, Enter commits, `+`/`-` zoom.** The smoke check now enforces the
+rule as binary — *operable, or not focusable, no third state*.
+
+`repeat`'s keyboard path is not free movement: there are only 31 candidate
+slides and they are already enumerated, so arrows are a cursor over that list.
+Pressing right twice from the default walks it to a perfect alignment —
+`"nothing lands"` → `"every tile landed"`.
+
+### P6 found two bugs, which is what P6 was for
+
+**The sandbox opened white inside a dark page.** `dark` defaulted to `false`
+regardless of the reader's theme, so a phone in dark mode got a glaring white
+canvas — broken-looking before it is a choice. It now defaults to the system
+preference and stays a real control, because the tiling is a picture someone may
+print. A design carried in the URL still wins: that was somebody's decision.
+
+**The sandbox did not re-fit on resize.** A tiling filling **96%** of the width
+in portrait fell to **44%** after a rotation and stayed there. The canvas
+resizes; the view did not. Fixed with an opt-in `refitOnResize` — opt-in because
+the hierarchy drives its own zoom per stage and the continuum fits once
+deliberately, and neither may have that taken back. Asserted, on the dimension
+that should be full in either orientation.
+
+### And the fill defect was everywhere it had not been checked
+
+Sprint 11 fixed it for the scroll scenes. It was still present in every
+playground, because none of them was in that sprint's scope:
+
+| | before | after |
+| --- | --- | --- |
+| /make/, desktop | 61% wide | **83%** |
+| repeat, desktop | 52% wide | **88%** |
+| recurrence, desktop | 53% wide | **88%** |
+
+Same cause each time — a landscape canvas holding a square tiling — and for the
+hands-on scenes the same fix as sprint 11: the HUD moves beside the figure at
+desktop, which is what actually narrows the canvas. The threshold now runs on
+all five figures and both pages.
+
 ## Measured before planning
 
 ### The hands-on scenes cannot be used without a pointer

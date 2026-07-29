@@ -47,6 +47,7 @@ import {
 import { INK, METATILE, REFLECTION, STROKE_WIDTH } from '../renderer/palette.js';
 import { TileRenderer, type Overlay } from '../renderer/renderer.js';
 import { bind } from './scene.js';
+import { bindKeys } from './keys.js';
 
 type Act = 'hexagons' | 'hats';
 
@@ -275,14 +276,24 @@ export function mountRepeatScene(root: HTMLElement): () => void {
   // through the candidate slides one at a time. Without it the scene's entire
   // argument is reachable only by pointer.
   let cursor = 0;
-  const onNudge = () => {
+  /**
+   * Step to another candidate slide.
+   *
+   * There are only ever 31 of these and they are already enumerated, so a
+   * keyboard is not doing free movement here — it is a cursor over a list,
+   * which is the same thing the button does and the honest keyboard equivalent
+   * of dragging until the copy snaps.
+   */
+  const step = (delta: number) => {
     if (!candidates.length) return;
-    cursor = (cursor + 1) % candidates.length;
+    cursor = (cursor + delta + candidates.length) % candidates.length;
     shift = candidates[cursor]!;
     raw = { x: toX(shift), y: toY(shift) };
     tried.add(`${shift.a},${shift.b}`);
     draw();
   };
+
+  const onNudge = () => step(1);
 
   const onNext = () => {
     loadAct('hats');
@@ -320,6 +331,13 @@ export function mountRepeatScene(root: HTMLElement): () => void {
   };
 
   next.addEventListener('click', onNext);
+  // Arrows walk the candidate slides in either direction; Enter is the same
+  // "try another" the button offers.
+  const detachKeys = bindKeys(canvas, {
+    onStep: (dx, dy) => step(dx + dy >= 0 ? 1 : -1),
+    onCommit: () => step(1),
+  });
+
   nudge.addEventListener('click', onNudge);
   reset.addEventListener('click', onReset);
   media.addEventListener('change', onTheme);
@@ -328,6 +346,7 @@ export function mountRepeatScene(root: HTMLElement): () => void {
 
   return () => {
     next.removeEventListener('click', onNext);
+    detachKeys();
     nudge.removeEventListener('click', onNudge);
     reset.removeEventListener('click', onReset);
     media.removeEventListener('change', onTheme);

@@ -55,6 +55,20 @@ export interface RendererOptions {
    * gesture handler; without the handler, the cap is not needed either.
    */
   gestures?: boolean;
+  /**
+   * Re-fit the view when the canvas changes size. Default false.
+   *
+   * The canvas resizes but the view does not, so a figure framed for one shape
+   * of box keeps its old scale in the new one. Measured in the sandbox: a
+   * tiling filling **96%** of the width in portrait fell to **44%** after a
+   * rotation, and stayed there. The piece never showed this because its scenes
+   * re-fit on every scroll-driven redraw anyway.
+   *
+   * Opt-in rather than default, because scenes that drive the view deliberately
+   * — the hierarchy zooms per stage, the continuum fits once so the tiling does
+   * not appear to swim — must not have it taken back from them.
+   */
+  refitOnResize?: boolean;
 }
 
 interface Bucket {
@@ -90,6 +104,7 @@ export class TileRenderer {
   private mode: ColourMode;
   private palette: Palette;
   private padding: number;
+  private readonly refitOnResize: boolean;
   private tapOption: RendererOptions['onTap'];
 
   /** Called after any pan or zoom, so scenes can react to the view. */
@@ -130,6 +145,7 @@ export class TileRenderer {
   private cssWidth = 1;
   private cssHeight = 1;
   private frame = 0;
+  private first = true;
   private disposed = false;
 
   constructor(canvas: HTMLCanvasElement, opts: RendererOptions = {}) {
@@ -142,6 +158,7 @@ export class TileRenderer {
     this.dark = opts.dark ?? false;
     this.mode = opts.mode ?? 'accessible';
     this.padding = opts.padding ?? 0.06;
+    this.refitOnResize = opts.refitOnResize ?? false;
     this.tapOption = opts.onTap;
     this.palette = this.buildPalette();
 
@@ -317,6 +334,16 @@ export class TileRenderer {
   }
 
   /** Zoom to an absolute scale, keeping the viewport centre fixed. */
+  /**
+   * Move the view by a screen-space delta — the keyboard's equivalent of a
+   * drag, and it goes through the same `pan()` the gesture handler uses so the
+   * two can never disagree about what panning means.
+   */
+  panBy(dx: number, dy: number): void {
+    this.view = pan(this.view, dx, dy);
+    this.viewChanged();
+  }
+
   zoomTo(scale: number): void {
     const factor = scale / this.view.scale;
     if (!Number.isFinite(factor) || factor === 1) return;
@@ -383,9 +410,16 @@ export class TileRenderer {
       this.canvas.width = w;
       this.canvas.height = h;
     }
+    const changed = this.cssWidth !== cssW || this.cssHeight !== cssH;
     this.cssWidth = cssW;
     this.cssHeight = cssH;
     this.dpr = dpr;
+    // `first` guards the initial call, where there is nothing to re-fit yet.
+    if (this.refitOnResize && changed && !this.first) {
+      this.fit();
+      return;
+    }
+    this.first = false;
     this.requestDraw();
   }
 
