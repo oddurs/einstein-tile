@@ -12,6 +12,7 @@
  */
 
 import { SURFACE } from './palette.js';
+import { spaceCSS } from './space.js';
 import { typeCSS } from './type.js';
 
 export interface Tokens {
@@ -67,6 +68,10 @@ const declare = (t: Tokens): string =>
  */
 export const rootCSS = (base = ''): string =>
   `${typeCSS(base)}\n  ` +
-  `:root {\n    ${declare(TOKENS.light)}\n  }\n` +
+  `:root {\n    ${spaceCSS()}\n    ${declare(TOKENS.light)}\n  }\n` +
+  // One place where motion is switched off, so a transition added later cannot
+  // forget to honour the preference.
+  `  @media (prefers-reduced-motion: reduce) {\n` +
+  `    :root { --motion-quick: 0ms; --motion-settle: 0ms; }\n  }\n` +
   `  @media (prefers-color-scheme: dark) {\n` +
   `    :root {\n    ${declare(TOKENS.dark)}\n    }\n  }`;

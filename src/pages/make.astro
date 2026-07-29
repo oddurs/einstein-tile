@@ -96,7 +96,7 @@ const site = `https://oddurs.github.io${base}/`;
         .bar::after {
           content: 'This one needs JavaScript — it draws the tiling in your browser.';
           display: block;
-          padding: 2rem 0;
+          padding: var(--space-gutter) 0;
           color: var(--muted);
         }
       </style>
@@ -121,14 +121,14 @@ const site = `https://oddurs.github.io${base}/`;
       main {
         max-width: 54rem;
         margin: 0 auto;
-        padding: 0 max(16px, env(safe-area-inset-left)) 4rem;
+        padding: 0 max(var(--space-cosy), env(safe-area-inset-left)) var(--space-chapter);
       }
 
       .bar {
         display: flex;
         align-items: baseline;
-        gap: 14px;
-        padding: 1.4rem 0 1rem;
+        gap: var(--space-snug);
+        padding: var(--space-cosy) 0 var(--space-cosy);
         flex-wrap: wrap;
       }
       .back {
@@ -151,9 +151,9 @@ const site = `https://oddurs.github.io${base}/`;
       }
 
       .stage {
-        margin: 0 0 1.4rem;
+        margin: 0 0 var(--space-cosy);
         border: 1px solid var(--line);
-        border-radius: 14px;
+        border-radius: var(--radius-panel);
         overflow: hidden;
       }
       .stage canvas {
@@ -179,12 +179,12 @@ const site = `https://oddurs.github.io${base}/`;
         .stage canvas { height: 46dvh; }
       }
 
-      .controls { display: flex; flex-direction: column; gap: 14px; }
+      .controls { display: flex; flex-direction: column; gap: var(--space-snug); }
 
       .row {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: var(--space-snug);
         flex-wrap: wrap;
       }
 
@@ -202,13 +202,13 @@ const site = `https://oddurs.github.io${base}/`;
 
       .end { font-size: 12px; color: var(--muted); }
 
-      .schemes { display: flex; gap: 8px; flex-wrap: wrap; }
+      .schemes { display: flex; gap: var(--space-tight); flex-wrap: wrap; }
 
       button {
         min-height: 44px;
-        padding: 0 14px;
+        padding: 0 var(--space-snug);
         border: 1px solid var(--line);
-        border-radius: 9px;
+        border-radius: var(--radius-control);
         background: transparent;
         color: inherit;
         font: inherit;
@@ -224,14 +224,14 @@ const site = `https://oddurs.github.io${base}/`;
         display: flex;
         flex: 0 0 auto;
         align-items: center;
-        gap: 7px;
+        gap: var(--space-tight);
       }
       .dark input { width: 20px; height: 20px; }
 
       /* The canvas claimed every touch gesture and told nobody: 53 words on the
          page and not one of them was "drag", "pinch" or "zoom". */
       .gesture {
-        margin: 0.2rem 0 0.1rem;
+        margin: var(--space-tight) 0 0;
         font-family: ui-sans-serif, system-ui, sans-serif;
         font-size: 12.5px;
         line-height: 1.5;
@@ -241,9 +241,9 @@ const site = `https://oddurs.github.io${base}/`;
       .gesture kbd {
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 11.5px;
-        padding: 0.5px 4px;
+        padding: 1px var(--space-tight);
         border: 1px solid var(--line);
-        border-radius: 4px;
+        border-radius: var(--radius-control);
       }
 
       .stage canvas:focus-visible {
@@ -251,7 +251,7 @@ const site = `https://oddurs.github.io${base}/`;
         outline-offset: -3px;
       }
 
-      .actions { gap: 8px; }
+      .actions { gap: var(--space-tight); }
       .actions button { flex: 0 0 auto; }
 
       .note {
@@ -264,7 +264,7 @@ const site = `https://oddurs.github.io${base}/`;
       :focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: 2px;
-        border-radius: 4px;
+        border-radius: var(--radius-control);
       }
 
       @media (prefers-reduced-motion: reduce) {

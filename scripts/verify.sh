@@ -18,6 +18,10 @@ run() {
 run "typecheck" npx tsc --noEmit
 run "unit tests" npx vitest run --reporter=dot
 run "browser checks" npm run --silent smoke
+# Typography was measured by a script nobody ran. Sprint 13's side panel took
+# the HUD prompt from 58ch to 32ch — out of the band the script exists to
+# enforce — and every check stayed green for a whole sprint.
+run "typography" npm run --silent type -- --strict
 
 if [ "$fail" -eq 0 ]; then
   printf '\n\033[32mall checks passed\033[0m\n'

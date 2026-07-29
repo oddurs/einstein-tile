@@ -479,7 +479,8 @@ const site = `https://oddurs.github.io${base}/`;
       article {
         max-width: 62rem;
         margin: 0 auto;
-        padding: 0 max(20px, env(safe-area-inset-left)) 8rem;
+        padding: 0 max(var(--space-cosy), env(safe-area-inset-left))
+          calc(var(--space-chapter) * 2);
       }
 
       .prose, .lede, .outro, .takeaway {
@@ -537,7 +538,7 @@ const site = `https://oddurs.github.io${base}/`;
       .lede > :not(.hero) { position: relative; }
 
       .eyebrow {
-        margin: 0 0 1.2rem;
+        margin: 0 0 var(--space-cosy);
         font-family: ui-sans-serif, system-ui, sans-serif;
         font-size: var(--type-fine);
         font-weight: 500;
@@ -547,7 +548,7 @@ const site = `https://oddurs.github.io${base}/`;
       }
 
       h1 {
-        margin: 0 0 1.4rem;
+        margin: 0 0 var(--space-cosy);
         font-size: var(--type-display);
         font-weight: 400;
         line-height: var(--leading-display);
@@ -564,7 +565,7 @@ const site = `https://oddurs.github.io${base}/`;
       }
 
       h2 {
-        margin: 0 0 0.8rem;
+        margin: 0 0 var(--space-snug);
         font-size: var(--type-section);
         font-weight: 400;
         line-height: var(--leading-section);
@@ -572,7 +573,7 @@ const site = `https://oddurs.github.io${base}/`;
         text-wrap: balance;
       }
 
-      p { margin: 0 0 1.1rem; }
+      p { margin: 0 0 var(--space-cosy); }
 
       .scene { margin: 0 0 14vh; }
 
@@ -583,9 +584,9 @@ const site = `https://oddurs.github.io${base}/`;
          there is always ordinary page above and below to scroll with. */
       .stage {
         position: relative;
-        margin: 2rem 0;
+        margin: var(--space-gutter) 0;
         border: 1px solid var(--line);
-        border-radius: 16px;
+        border-radius: var(--radius-panel);
         overflow: hidden;
         background: var(--bg);
       }
@@ -647,7 +648,7 @@ const site = `https://oddurs.github.io${base}/`;
          that happens to move as you scroll. It loses the drag hint, because
          the beats now say what it used to. */
       [data-scroll] .hud {
-        padding: 10px 18px;
+        padding: var(--space-tight) var(--space-cosy);
       }
 
       /* The readout named the shape beside an end label that already named it
@@ -688,7 +689,7 @@ const site = `https://oddurs.github.io${base}/`;
         line-height: var(--leading-body);
         color: var(--fg);
         opacity: 0;
-        transition: opacity 240ms ease;
+        transition: opacity var(--motion-settle) var(--motion-ease);
       }
 
       [data-scroll] .beat.is-current { opacity: 1; }
@@ -726,7 +727,7 @@ const site = `https://oddurs.github.io${base}/`;
           /* One row that fills the track, so both sticky children have a tall
              containing block to travel inside. */
           grid-template-rows: 1fr;
-          column-gap: 2.75rem;
+          column-gap: var(--space-section);
           align-items: start;
         }
 
@@ -751,7 +752,7 @@ const site = `https://oddurs.github.io${base}/`;
           grid-area: 1 / 2;
           display: flex;
           flex-direction: column;
-          gap: 1.1rem;
+          gap: var(--space-cosy);
           /* Roughly centred against a 72dvh figure pinned at 3dvh. */
           top: calc(3dvh + 7rem);
           min-height: 0;
@@ -760,7 +761,7 @@ const site = `https://oddurs.github.io${base}/`;
 
         [data-scroll] .beat {
           opacity: 0.26;
-          transition: opacity 240ms ease;
+          transition: opacity var(--motion-settle) var(--motion-ease);
         }
 
         [data-scroll] .beat.is-current { opacity: 1; }
@@ -775,7 +776,7 @@ const site = `https://oddurs.github.io${base}/`;
         [data-scroll] .beats { position: static; }
         [data-scroll] .beats { display: block; }
         [data-scroll] .beat {
-          margin-bottom: 0.9rem;
+          margin-bottom: var(--space-snug);
           opacity: 1;
         }
       }
@@ -789,7 +790,7 @@ const site = `https://oddurs.github.io${base}/`;
          be the last thing on the page rather than a clause inside a paragraph
          about attribution. */
       .coda {
-        margin: 2.2rem 0 3rem;
+        margin: var(--space-section) 0 var(--space-section);
         font-size: var(--type-lead);
         line-height: var(--leading-lead);
         text-indent: 0;
@@ -799,15 +800,15 @@ const site = `https://oddurs.github.io${base}/`;
       .cue {
         display: flex;
         align-items: center;
-        gap: 0.7rem;
-        margin: 2.6rem 0 0;
+        gap: var(--space-snug);
+        margin: var(--space-section) 0 0;
         font-family: ui-sans-serif, system-ui, sans-serif;
         font-size: var(--type-fine);
         font-weight: 500;
         letter-spacing: 0.09em;
         text-transform: uppercase;
         color: var(--muted);
-        transition: opacity 400ms ease;
+        transition: opacity var(--motion-settle) var(--motion-ease);
       }
 
       /* A short rule that slides down and back, the length of one polite
@@ -846,8 +847,8 @@ const site = `https://oddurs.github.io${base}/`;
       .handoff {
         display: flex;
         align-items: center;
-        gap: 0.85rem;
-        margin: 2.4rem 0 0;
+        gap: var(--space-snug);
+        margin: var(--space-section) 0 0;
         font-family: ui-sans-serif, system-ui, sans-serif;
         font-size: var(--type-fine);
         font-weight: 500;
@@ -871,7 +872,7 @@ const site = `https://oddurs.github.io${base}/`;
       /* The stage stops being a figure you look at and becomes a thing you
          touch: it sits on its own surface rather than the page's. */
       [data-hands-on] .stage {
-        margin-top: 1rem;
+        margin-top: var(--space-cosy);
         border-color: color-mix(in oklab, var(--accent) 26%, var(--line));
         background: color-mix(in oklab, var(--accent) 4%, var(--bg));
       }
@@ -895,7 +896,10 @@ const site = `https://oddurs.github.io${base}/`;
       @media (min-width: 900px) {
         [data-hands-on] .stage {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(17rem, 22rem);
+          /* Wide enough that the prompt stays in the 45–75ch band. At 22rem it
+             measured 32ch — the side panel introduced in sprint 13 quietly took
+             the caption out of band, and only `npm run type` noticed. */
+          grid-template-columns: minmax(0, 1fr) minmax(20rem, 27rem);
         }
         [data-hands-on] .stage canvas {
           height: 66dvh;
@@ -906,6 +910,16 @@ const site = `https://oddurs.github.io${base}/`;
           border-left: 1px solid var(--line);
           overflow-y: auto;
         }
+        /* In the panel the prompt is chrome beside the figure rather than the
+           argument, so it takes the step below body — which also brings its
+           measure back into the 45–75ch band that the panel had knocked it out
+           of. (The takeaway is never shrunk this way: sprint 8 settled that it
+           carries the scene and is de-emphasised by colour, not by size.) */
+        [data-hands-on] .hud-prompt {
+          font-size: var(--type-small);
+          line-height: var(--leading-small);
+        }
+
         /* In a side panel the buttons have a column, not a row — side by side
            they wrap mid-phrase ("Try another / slide"). */
         [data-hands-on] .hud-row {
@@ -938,13 +952,13 @@ const site = `https://oddurs.github.io${base}/`;
       }
 
       .hud {
-        padding: 16px 18px;
+        padding: var(--space-cosy) var(--space-cosy);
         border-top: 1px solid var(--line);
         background: var(--panel);
       }
 
       .hud-title {
-        margin: 0 0 6px;
+        margin: 0 0 var(--space-tight);
         font-family: ui-sans-serif, system-ui, sans-serif;
         font-size: 12px;
         font-weight: 500;
@@ -955,27 +969,27 @@ const site = `https://oddurs.github.io${base}/`;
 
       .hud-prompt {
         max-width: var(--measure-caption);
-        margin: 0 0 12px;
+        margin: 0 0 var(--space-snug);
         font-size: var(--type-body);
         line-height: var(--leading-lead);
         text-wrap: balance;
         min-height: 2.8em;
       }
 
-      .hud-row { display: flex; align-items: center; gap: 10px; }
-      .slider-row { gap: 12px; }
+      .hud-row { display: flex; align-items: center; gap: var(--space-tight); }
+      .slider-row { gap: var(--space-snug); }
 
       .gauge {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 12px;
+        gap: var(--space-snug);
+        margin-bottom: var(--space-snug);
       }
 
       .track {
         flex: 1;
         height: 8px;
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         background: rgba(128, 128, 128, 0.22); /* fallback */
         background: color-mix(in oklab, var(--fg) 12%, transparent);
         overflow: hidden;
@@ -983,9 +997,9 @@ const site = `https://oddurs.github.io${base}/`;
       .bar {
         height: 100%;
         width: 0;
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         background: var(--accent);
-        transition: width 90ms linear;
+        transition: width var(--motion-quick) linear;
       }
       .bar[data-perfect='true'] { background: var(--good); }
 
@@ -1001,8 +1015,8 @@ const site = `https://oddurs.github.io${base}/`;
 
       .hint {
         display: flex;
-        gap: 10px;
-        margin: 10px 0 0;
+        gap: var(--space-tight);
+        margin: var(--space-tight) 0 0;
         font-family: ui-sans-serif, system-ui, sans-serif;
         font-size: 12.5px;
         color: var(--muted);
@@ -1020,9 +1034,9 @@ const site = `https://oddurs.github.io${base}/`;
 
       button {
         min-height: 44px;
-        padding: 0 16px;
+        padding: 0 var(--space-cosy);
         border: 1px solid var(--line);
-        border-radius: 9px;
+        border-radius: var(--radius-control);
         background: transparent;
         color: inherit;
         font-family: ui-sans-serif, system-ui, sans-serif;
@@ -1037,14 +1051,14 @@ const site = `https://oddurs.github.io${base}/`;
       :focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: 2px;
-        border-radius: 4px;
+        border-radius: var(--radius-control);
       }
 
       /* The takeaway is the scene's meaning in words. It carries the point for
          anyone who cannot use the canvas, and for anyone who skims. */
       .takeaway {
         margin: 0;
-        padding-left: 1rem;
+        padding-left: var(--space-cosy);
         border-left: 2px solid var(--line);
         /* Body size, not small. This paragraph carries the scene's whole
            argument and is the only thing a reader without JavaScript gets —
@@ -1057,20 +1071,20 @@ const site = `https://oddurs.github.io${base}/`;
       .no-js-note {
         display: none;
         max-width: var(--measure);
-        margin: 0 auto 2rem;
-        padding-left: 1rem;
+        margin: 0 auto var(--space-gutter);
+        padding-left: var(--space-cosy);
         border-left: 2px solid var(--line);
         font-size: 0.9em;
         color: var(--muted);
       }
 
       .make-link {
-        margin: 1.6rem 0;
+        margin: var(--space-gutter) 0;
         font-size: 1.05em;
       }
       .make-link a { text-decoration-thickness: 1px; }
 
-      .outro { padding-top: 2rem; }
+      .outro { padding-top: var(--space-gutter); }
       .fine { font-size: var(--type-small); color: var(--muted); }
       a { color: inherit; text-underline-offset: 3px; }
 
